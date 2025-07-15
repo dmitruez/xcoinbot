@@ -78,3 +78,8 @@ class AdminRepository(BaseRepository[Admin]):
 		query = f"SELECT * FROM {self.table_name} WHERE level >= $1"
 		records = await self._fetch_all(query, min_level)
 		return await self._records_to_models(records)
+
+	async def update_level(self, user_id: int, level: int) -> None:
+		query = f"""UPDATE {self.table_name} SET level = $1
+					WHERE user_id = $2"""
+		await self._execute(query, level, user_id)

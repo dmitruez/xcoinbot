@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Tuple
 
 @dataclass
 class User:
@@ -37,3 +37,13 @@ class Captcha:
     text: str
     attempts: int = 0 # При трех не правильных попытках банить вход на 5 мин
     created_at: datetime = datetime.now()
+
+
+@dataclass
+class NotificationTemplate:
+    """Модель шаблона уведомления о смене канала"""
+    text: str
+    buttons: List[Tuple[str, str]]  # (text, url)
+
+    def has_buttons(self) -> bool:
+        return len(self.buttons) > 0
