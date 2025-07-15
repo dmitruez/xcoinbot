@@ -134,3 +134,12 @@ class UserRepository(BaseRepository[User]):
 		query = f"SELECT COUNT(*) FROM {self.table_name}"
 		async with self.pool.acquire() as conn:
 			return await conn.fetchval(query)
+
+	async def count_active_users(self) -> List[User]:
+		"""Получение активных пользователей"""
+		query = f"""
+		SELECT COUNT(*) FROM {self.table_name} 
+		WHERE is_active = TRUE AND is_banned = FALSE
+		"""
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(query)

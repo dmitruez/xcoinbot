@@ -1,1 +1,3 @@
 asyncpg
+pillow
+numpy
