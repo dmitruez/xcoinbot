@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict
 from ..models import User
 from ..repositories.user_repository import UserRepository
-from ..utils.logger import logger
+from ..utils.loggers import services as logger
 
 
 class UserService:

@@ -5,7 +5,7 @@ from aiogram.types import Chat
 
 from ..models import Channel
 from ..repositories.channel_repository import ChannelRepository
-from ..utils.logger import logger
+from ..utils.loggers import services as logger
 
 
 class ChannelService:

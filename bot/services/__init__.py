@@ -12,12 +12,12 @@ class Services:
 	"""Контейнер для всех сервисов"""
 
 	def __init__(self, bot: Bot, repos: Repositories):
-		self.captcha = CaptchaService(repos.captcha)
-		self.channel = ChannelService(bot, repos.channel)
-		self.notification = NotificationService(bot, repos)
-		self.subscriber = SubscriptionService(bot, repos.user, repos.channel)
-		self.user = UserService(repos.user)
-		self.admin = AdminService(repos.admin)
+		self.captcha: CaptchaService = CaptchaService(repos.captcha)
+		self.channel: ChannelService = ChannelService(bot, repos.channel)
+		self.notification: NotificationService = NotificationService(bot, repos)
+		self.subscriber: SubscriptionService = SubscriptionService(bot, repos.user, repos.channel)
+		self.user: UserService = UserService(repos.user)
+		self.admin: AdminService = AdminService(repos.admin)
 
 
 def setup_services(bot: Bot, repos: Repositories) -> Services:

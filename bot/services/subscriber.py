@@ -5,7 +5,7 @@ from aiogram import Bot
 from ..models import User
 from ..repositories.user_repository import UserRepository
 from ..repositories.channel_repository import ChannelRepository
-from ..utils.logger import logger
+from ..utils.loggers import services as logger
 
 
 class SubscriptionService:

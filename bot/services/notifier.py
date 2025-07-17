@@ -6,7 +6,7 @@ from aiogram.utils.markdown import code
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from ..models import NotificationTemplate
 from ..repositories import Repositories
-from ..utils.logger import logger
+from ..utils.loggers import services as logger
 
 class NotificationService:
 	def __init__(self, bot: Bot, repos: Repositories):

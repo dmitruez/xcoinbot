@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 from ..models import Admin
 from ..repositories.admin_repository import AdminRepository
-from ..utils.logger import logger
+from ..utils.loggers import services as logger
 
 
 class AdminService:
