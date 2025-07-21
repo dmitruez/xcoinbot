@@ -6,6 +6,7 @@ import asyncpg
 from .base_repository import BaseRepository
 from ..models import User
 
+
 class UserRepository(BaseRepository[User]):
 	def __init__(self, pool: asyncpg.Pool):
 		super().__init__(pool, 'users', User)
@@ -29,17 +30,34 @@ class UserRepository(BaseRepository[User]):
         """
 		await self._execute(query)
 
-	async def get(self, user_id: int) -> Optional[User]:
+	async def get_by_id(self, user_id: int) -> Optional[User]:
 		"""Получение пользователя по ID"""
 		query = f"SELECT * FROM {self.table_name} WHERE user_id = $1"
 		record = await self._fetch(query, user_id)
 		return await self._record_to_model(record)
 
-	async def get_by_username(self, username: str) -> Optional[User]:
-		"""Получение пользователя по username"""
-		query = f"SELECT * FROM {self.table_name} WHERE username = $1"
-		record = await self._fetch(query, username)
-		return await self._record_to_model(record)
+	async def get_by_username(self, query: str, limit: int = 12) -> List[User]:
+		"""Поиск пользователей по username (без @)"""
+		query = query.lower().strip()
+		sql = """
+	    SELECT * FROM users 
+	    WHERE username IS NOT NULL 
+	    AND LOWER(username) LIKE $1 || '%'
+	    LIMIT $2
+	    """
+		records = await self._fetch_all(sql, query, limit)
+		return await self._records_to_models(records)
+
+	async def get_by_nickname(self, query: str, limit: int = 12) -> List[User]:
+		"""Поиск пользователей по nickname (имя + фамилия)"""
+		query = query.lower().strip()
+		sql = """
+	    SELECT * FROM users 
+	    WHERE LOWER(full_name) LIKE '%' || $1 || '%'
+	    LIMIT $2
+	    """
+		records = await self._fetch_all(sql, query, limit)
+		return await self._records_to_models(records)
 
 	async def create(self, user: User) -> None:
 		"""Создание нового пользователя"""

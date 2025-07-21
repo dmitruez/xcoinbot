@@ -41,26 +41,65 @@ class AdminKeyboards:
 		builder = InlineKeyboardBuilder()
 		builder.add(
 			InlineKeyboardButton(text="🔍 Поиск пользователя", callback_data="admin_search_user"),
-			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"),
+			# InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"), # НЕ РЕАЛИЗОВАНО
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
 		)
 		builder.adjust(1)
 		return builder.as_markup()
 
 	@staticmethod
+	def search_menu():
+		"""Меню поиска пользователей"""
+		builder = InlineKeyboardBuilder()
+		builder.row(
+			InlineKeyboardButton(text="🔍 По username", callback_data="admin_search_username"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="🔍 По имени/фамилии", callback_data="admin_search_nickname"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="🔍 По ID", callback_data="admin_search_id"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="◀ Назад", callback_data="admin_users"),
+			width=1
+		)
+		return builder.as_markup()
+
+	@staticmethod
+	def cancel_search():
+		"""Клавиатура отмены поиска"""
+		builder = InlineKeyboardBuilder()
+		builder.add(InlineKeyboardButton(
+			text="❌ Отменить поиск",
+			callback_data="admin_users"
+		))
+		return builder.as_markup()
+
+	@staticmethod
+	def back_to_search():
+		"""Кнопка возврата к поиску"""
+		builder = InlineKeyboardBuilder()
+		builder.add(InlineKeyboardButton(
+			text="🔙 Вернуться к поиску",
+			callback_data="admin_search_menu"
+		))
+		return builder.as_markup()
+
+
+	@staticmethod
 	def profile_menu(user: User):
 		builder = InlineKeyboardBuilder()
-		button_ban = InlineKeyboardButton(text="🚫 Забанить", callback_data=f"admin_ban_{user.user_id}") \
-			if not user.is_banned else InlineKeyboardButton(text="✅ Разбанить",
-															callback_data=f"admin_unban_{user.user_id}")
 
 		button_notif = InlineKeyboardButton(text="❌ Не уведомлять пользователя",
-											callback_data=f"admin_unnotif_{user.user_id} ") \
-			if user.should_notify else InlineKeyboardButton(text="✔️ Уведомлять пользователя",
-															callback_data=f"admin_notif_{user.user_id}")
+											callback_data=f"admin_ban_{user.user_id} ") \
+			if user.should_notify else InlineKeyboardButton(text="✅ Уведомлять пользователя",
+															callback_data=f"admin_unban_{user.user_id}")
 
 		builder.add(
-			button_ban,
 			button_notif,
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_users")
 		)

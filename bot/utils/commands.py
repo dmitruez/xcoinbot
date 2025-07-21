@@ -8,12 +8,10 @@ from ..services import Services
 
 
 async def setup_commands(bot: Bot, services: Services):
-	# base_commands = [
-	#     BotCommand(command='/start', description="Запуск бота"),
-	#     BotCommand(command='/channel', description="Ссылка на актуальный канал")
-	#     BotCommand(command='/stats', description="Статистика пользователей"),
-	#     BotCommand(command='/admin', description="Админ панель")
-	# ]
+	base_commands = [
+		BotCommand(command='/start', description="Запуск бота"),
+		BotCommand(command='/channel', description="Ссылка на актуальный канал")
+	]
 
 	regular_admin_commands = [
 		BotCommand(command='/stats', description="Статистика пользователей"),
@@ -21,8 +19,8 @@ async def setup_commands(bot: Bot, services: Services):
 	]
 
 	super_admin_commands = [
-		BotCommand(command='/ban', description="Забанить пользователя по ID"),
-		BotCommand(command='/unban', description="Разблокировать пользователя по ID"),
+		BotCommand(command='/ban', description="ПИШИТЕ /ban {ID} Выключить уведомления по ID"),
+		BotCommand(command='/unban', description="ПИШИТЕ /unban {ID} Включить уведомления по ID"),
 		BotCommand(command='/set_backup_channel', description="Назначить резервный канал"),
 		BotCommand(command='/set_main_channel', description="Назначить основной канал"),
 		BotCommand(command='/edit_notification', description="Измненение сообщения рассылки")
@@ -33,10 +31,10 @@ async def setup_commands(bot: Bot, services: Services):
 		BotCommand(command='/backup', description="Сделать бэкап"),
 	]
 
-	# try:
-	#     await bot.set_my_commands(commands=base_commands, scope=BotCommandScopeDefault())
-	# except Exception as e:
-	#     print(e)
+	try:
+		await bot.set_my_commands(commands=base_commands, scope=BotCommandScopeDefault())
+	except Exception as e:
+		print(e)
 
 	regular_admins, super_admins = await services.admin.list_admins()
 
