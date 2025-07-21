@@ -1,4 +1,5 @@
 from typing import List, Optional, Dict
+
 from ..models import User
 from ..repositories.user_repository import UserRepository
 from ..utils.loggers import services as logger
@@ -18,22 +19,15 @@ class UserService:
 			logger.error(f"Error getting user {user_id}: {e}")
 			return None
 
-	async def create_user(self, user_id: int, username: Optional[str], full_name: str) -> User:
+	async def create_user(self, user) -> User:
 		"""Создание нового пользователя"""
-		user = User(
-			id=user_id,
-			username=username,
-			full_name=full_name,
-			is_active=True,
-			should_notify=True
-		)
 
 		try:
 			await self.user_repo.create(user)
-			logger.info(f"Created new user: {user_id}")
+			logger.info(f"Created new user: {user.user_id}")
 			return user
 		except Exception as e:
-			logger.error(f"Error creating user {user_id}: {e}")
+			logger.error(f"Error creating user {user.user_id}: {e}")
 			raise
 
 	async def ban_user(self, user_id: int) -> bool:
@@ -92,5 +86,11 @@ class UserService:
 				'active': active
 			}
 		except Exception as e:
-			logger.error(f"Error counting users: {e}")
+			logger.exception(f"Error counting users: {e}")
 		return {'total': 0, 'active': 0}
+
+	async def users_list(self) -> List[User]:
+		try:
+			return await self.user_repo.get_all()
+		except Exception as e:
+			logger.exception(f"Error getting all users: {e}")

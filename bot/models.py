@@ -4,46 +4,51 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Tuple
 
+
 @dataclass
 class User:
-    id: int
-    username: Optional[str]
-    full_name: str
-    is_active: bool = True
-    is_banned: bool = False
-    captcha_passed: bool = False
-    should_notify: bool = True  # Получать уведомления о смене канала
-    join_date: datetime = datetime.now()
+	user_id: int
+	username: Optional[str]
+	full_name: str
+	is_active: bool = True
+	is_banned: bool = False
+	captcha_passed: bool = False
+	should_notify: bool = True  # Получать уведомления о смене канала
+	join_date: datetime = datetime.now()
+	banned_when: datetime = None
+
 
 @dataclass
 class Channel:
-    id: int
-    title: str
-    username: Optional[str]
-    is_main: bool = False
-    is_backup: bool = False
+	channel_id: int
+	title: str
+	username: Optional[str]
+	link: Optional[str] = None
+	is_main: bool = False
+	is_backup: bool = False
+
 
 @dataclass
 class Admin:
-    user_id: int
-    username: Optional[str]
-    full_name: str
-    level: int = 1  # Уровень доступа (1 - базовый, 2 - полный)
-    created_at: datetime = datetime.now()
+	user_id: int
+	username: Optional[str]
+	full_name: str
+	level: int = 1  # Уровень доступа (1 - базовый, 2 - полный)
+
 
 @dataclass
 class Captcha:
-    user_id: int
-    text: str
-    attempts: int = 0 # При трех не правильных попытках банить вход на 5 мин
-    created_at: datetime = datetime.now()
+	user_id: int
+	text: str
+	attempts: int = 0  # При трех не правильных попытках банить вход на 5 мин
+	created_at: datetime = datetime.now()
 
 
 @dataclass
 class NotificationTemplate:
-    """Модель шаблона уведомления о смене канала"""
-    text: str
-    buttons: List[Tuple[str, str]]  # (text, url)
+	"""Модель шаблона уведомления о смене канала"""
+	text: str
+	buttons: List[Tuple[str, str]]  # (text, url)
 
-    def has_buttons(self) -> bool:
-        return len(self.buttons) > 0
+	def has_buttons(self) -> bool:
+		return len(self.buttons) > 0

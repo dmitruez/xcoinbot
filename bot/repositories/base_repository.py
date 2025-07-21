@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic, Optional, List, Union
+
 import asyncpg
 from asyncpg.pool import Pool
-from asyncpg import Connection
 
 
 T = TypeVar('T')

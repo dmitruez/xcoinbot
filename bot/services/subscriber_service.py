@@ -1,10 +1,12 @@
 # Логика подписчиков
 
 from typing import Optional, Tuple
+
 from aiogram import Bot
+
 from ..models import User
-from ..repositories.user_repository import UserRepository
 from ..repositories.channel_repository import ChannelRepository
+from ..repositories.user_repository import UserRepository
 from ..utils.loggers import services as logger
 
 
@@ -24,7 +26,7 @@ class SubscriptionService:
 				return True  # Если резервный канал не установлен, пропускаем проверку
 
 			member = await self.bot.get_chat_member(
-				chat_id=backup_channel.id,
+				chat_id=backup_channel.channel_id,
 				user_id=user_id
 			)
 			return member.status in ['member', 'administrator', 'creator']
@@ -42,7 +44,7 @@ class SubscriptionService:
 			user = await self.user_repo.get(user_id)
 			if not user:
 				user = await self.user_repo.create(User(
-					id=user_id,
+					user_id=user_id,
 					username=username,
 					full_name=full_name,
 					is_active=True,

@@ -1,7 +1,9 @@
 from typing import Optional, List
+
 import asyncpg
-from . import Admin
+
 from .base_repository import BaseRepository
+from ..models import Admin
 
 
 class AdminRepository(BaseRepository[Admin]):
@@ -16,8 +18,7 @@ class AdminRepository(BaseRepository[Admin]):
             user_id BIGINT PRIMARY KEY,
             username TEXT,
             full_name TEXT NOT NULL,
-            level INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT NOW()
+            level INTEGER DEFAULT 1
         );
         CREATE INDEX IF NOT EXISTS idx_admins_level ON admins(level);
         """
@@ -39,7 +40,7 @@ class AdminRepository(BaseRepository[Admin]):
 		await self._execute(
 			query,
 			admin.user_id, admin.username, admin.full_name,
-			admin.level, admin.created_at
+			admin.level
 		)
 
 	async def update(self, admin: Admin) -> None:

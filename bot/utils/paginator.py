@@ -1,27 +1,48 @@
-from typing import List, TypeVar
+from dataclasses import dataclass
+from typing import List, TypeVar, Generic, Tuple
 
 
 T = TypeVar('T')
 
 
-class Paginator:
-	"""Утилита для пагинации списков"""
+@dataclass
+class Page(Generic[T]):
+	items: List[T]
+	page: int
+	total_pages: int
+	total_items: int
 
-	def __init__(self, items: List[T], per_page: int = 10):
+
+class Paginator(Generic[T]):
+	"""Улучшенный пагинатор с дополнительной информацией"""
+
+	def __init__(self, items: List[T], per_page: int = 8):
 		self.items = items
 		self.per_page = per_page
-		self.total_pages = (len(items) + per_page - 1) // per_page
+		self.total_items = len(items)
+		self.total_pages = max(1, (self.total_items + per_page - 1) // per_page)
 
-	def get_page(self, page: int) -> List[T]:
-		"""Получение страницы с элементами"""
+	def get_page(self, page: int) -> Page[T]:
+		"""Получает страницу с метаданными"""
+		if page < 1 or page > self.total_pages:
+			raise ValueError("Invalid page number")
+
 		start = (page - 1) * self.per_page
 		end = start + self.per_page
-		return self.items[start:end]
+		return Page(
+			items=self.items[start:end],
+			page=page,
+			total_pages=self.total_pages,
+			total_items=self.total_items
+		)
 
-	def has_next(self, page: int) -> bool:
-		"""Есть ли следующая страница"""
-		return page < self.total_pages
+	def get_pagination_buttons(self, current_page: int, prefix: str) -> List[Tuple[str, str]]:
+		"""Генерирует кнопки пагинации"""
+		buttons = []
+		if current_page > 1:
+			buttons.append(("⬅️ Назад", f"{prefix}_page_{current_page - 1}"))
 
-	def has_previous(self, page: int) -> bool:
-		"""Есть ли предыдущая страница"""
-		return page > 1
+		if current_page < self.total_pages:
+			buttons.append(("Вперед ➡️", f"{prefix}_page_{current_page + 1}"))
+
+		return buttons

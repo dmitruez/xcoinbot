@@ -1,8 +1,10 @@
+from datetime import datetime
 from typing import Optional, List
-import asyncpg
-from . import User
-from .base_repository import BaseRepository
 
+import asyncpg
+
+from .base_repository import BaseRepository
+from ..models import User
 
 class UserRepository(BaseRepository[User]):
 	def __init__(self, pool: asyncpg.Pool):
@@ -19,7 +21,8 @@ class UserRepository(BaseRepository[User]):
             is_banned BOOLEAN DEFAULT FALSE,
             captcha_passed BOOLEAN DEFAULT FALSE,
             should_notify BOOLEAN DEFAULT TRUE,
-            join_date TIMESTAMP DEFAULT NOW()
+            join_date TIMESTAMP DEFAULT NOW(),
+            banned_when TIMESTAMP DEFAULT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
         CREATE INDEX IF NOT EXISTS idx_users_banned ON users(is_banned);
@@ -47,7 +50,7 @@ class UserRepository(BaseRepository[User]):
         """
 		await self._execute(
 			query,
-			user.id, user.username, user.full_name, user.is_active,
+			user.user_id, user.username, user.full_name, user.is_active,
 			user.is_banned, user.captcha_passed, user.should_notify, user.join_date
 		)
 
@@ -65,7 +68,7 @@ class UserRepository(BaseRepository[User]):
         """
 		await self._execute(
 			query,
-			user.id, user.username, user.full_name, user.is_active,
+			user.user_id, user.username, user.full_name, user.is_active,
 			user.is_banned, user.captcha_passed, user.should_notify
 		)
 
@@ -97,7 +100,7 @@ class UserRepository(BaseRepository[User]):
 		"""Блокировка пользователя"""
 		query = f"""
         UPDATE {self.table_name} 
-        SET is_banned = TRUE, is_active = FALSE 
+        SET is_banned = TRUE, is_active = FALSE, banned_when = now()
         WHERE user_id = $1
         """
 		await self._execute(query, user_id)
@@ -106,7 +109,7 @@ class UserRepository(BaseRepository[User]):
 		"""Разблокировка пользователя"""
 		query = f"""
         UPDATE {self.table_name} 
-        SET is_banned = FALSE, is_active = TRUE 
+        SET is_banned = FALSE, is_active = TRUE, banned_when = null;
         WHERE user_id = $1
         """
 		await self._execute(query, user_id)
@@ -143,3 +146,33 @@ class UserRepository(BaseRepository[User]):
 		"""
 		async with self.pool.acquire() as conn:
 			return await conn.fetchval(query)
+
+	async def count_banned_users(self) -> List[User]:
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(
+				f"SELECT COUNT(*) FROM {self.table_name} WHERE is_banned = TRUE"
+			)
+
+	async def count_users_period(self, start_date: datetime, end_date: datetime) -> int:
+		"""Количество новых пользователей за период"""
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(
+				f"SELECT COUNT(*) FROM {self.table_name} WHERE join_date BETWEEN $1 AND $2",
+				start_date, end_date
+			)
+
+	async def count_active_period(self, start_date: datetime, end_date: datetime) -> int:
+		"""Количество активных пользователей за период"""
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(
+				f"SELECT COUNT(*) FROM {self.table_name} WHERE is_active = TRUE AND join_date BETWEEN $1 AND $2",
+				start_date, end_date
+			)
+
+	async def count_banned_period(self, start_date: datetime, end_date: datetime) -> int:
+		"""Количество забаненных пользователей за период"""
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(
+				f"SELECT COUNT(*) FROM {self.table_name} WHERE is_banned = TRUE AND banned_when BETWEEN $1 AND $2",
+				start_date, end_date
+			)

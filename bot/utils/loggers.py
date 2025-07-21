@@ -1,8 +1,8 @@
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
 
 class DailyFileHandler(logging.Handler):
@@ -50,7 +50,6 @@ class BotLogger:
 		self.logger = logging.getLogger(name)
 		self.logger.setLevel(logging.INFO)
 
-
 		if self.logger.handlers:
 			return
 		formatter = logging.Formatter(
@@ -67,7 +66,6 @@ class BotLogger:
 		daily_handler = DailyFileHandler(log_dir)
 		self.logger.addHandler(daily_handler)
 
-
 		# Настройка логгера aiogram
 		aiogram_logger = logging.getLogger('aiogram')
 		aiogram_logger.setLevel(logging.INFO)
@@ -78,11 +76,8 @@ class BotLogger:
 		aiogram_logger.addHandler(console_handler)
 		aiogram_logger.addHandler(daily_handler)
 
-
-
 	def get_logger(self):
 		return self.logger
-
 
 
 # Инициализация глобального логгера

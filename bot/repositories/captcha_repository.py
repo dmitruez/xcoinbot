@@ -1,7 +1,9 @@
 from typing import Optional
+
 import asyncpg
-from . import Captcha
+
 from .base_repository import BaseRepository
+from ..models import Captcha
 
 
 class CaptchaRepository(BaseRepository[Captcha]):

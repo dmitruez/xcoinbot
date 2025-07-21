@@ -1,9 +1,9 @@
 import asyncpg
-from ..models import User, Channel, Admin, Captcha
-from .user_repository import UserRepository
-from .channel_repository import ChannelRepository
+
 from .admin_repository import AdminRepository
 from .captcha_repository import CaptchaRepository
+from .channel_repository import ChannelRepository
+from .user_repository import UserRepository
 
 
 class Repositories:

@@ -1,7 +1,9 @@
 from typing import Optional, List
+
 import asyncpg
-from . import Channel
+
 from .base_repository import BaseRepository
+from ..models import Channel
 
 
 class ChannelRepository(BaseRepository[Channel]):
@@ -15,9 +17,9 @@ class ChannelRepository(BaseRepository[Channel]):
             channel_id BIGINT PRIMARY KEY,
             title TEXT NOT NULL,
             username TEXT,
+            link TEXT,
             is_main BOOLEAN DEFAULT FALSE,
-            is_backup BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP DEFAULT NOW()
+            is_backup BOOLEAN DEFAULT FALSE
         );
         CREATE INDEX IF NOT EXISTS idx_channels_main ON channels(is_main);
         CREATE INDEX IF NOT EXISTS idx_channels_backup ON channels(is_backup);
@@ -52,13 +54,13 @@ class ChannelRepository(BaseRepository[Channel]):
 		"""Создание нового канала"""
 		query = f"""
         INSERT INTO {self.table_name} 
-        (channel_id, title, username, is_main, is_backup, created_at)
+        (channel_id, title, username, link, is_main, is_backup)
         VALUES ($1, $2, $3, $4, $5, $6)
         """
 		await self._execute(
 			query,
-			channel.id, channel.title, channel.username,
-			channel.is_main, channel.is_backup
+			channel.channel_id, channel.title, channel.username,
+			channel.link, channel.is_main, channel.is_backup
 		)
 
 	async def update(self, channel: Channel) -> None:
@@ -67,14 +69,15 @@ class ChannelRepository(BaseRepository[Channel]):
         UPDATE {self.table_name} SET
             title = $2,
             username = $3,
-            is_main = $4,
-            is_backup = $5
+            link = $4,
+            is_main = $5,
+            is_backup = $6
         WHERE channel_id = $1
         """
 		await self._execute(
 			query,
-			channel.id, channel.title, channel.username,
-			channel.is_main, channel.is_backup
+			channel.channel_id, channel.title, channel.username,
+			channel.link, channel.is_main, channel.is_backup
 		)
 
 	async def set_main_channel(self, channel_id: int) -> None:
@@ -85,7 +88,7 @@ class ChannelRepository(BaseRepository[Channel]):
 		# Затем устанавливаем новый main канал
 		query = f"""
         UPDATE {self.table_name} 
-        SET is_main = TRUE 
+        SET is_main = TRUE, is_backup = FALSE
         WHERE channel_id = $1
         """
 		await self._execute(query, channel_id)
@@ -113,3 +116,9 @@ class ChannelRepository(BaseRepository[Channel]):
 		"""Удаление канала"""
 		query = f"DELETE FROM {self.table_name} WHERE channel_id = $1"
 		await self._execute(query, channel_id)
+
+	async def count_channels(self) -> int:
+		async with self.pool.acquire() as conn:
+			return await conn.fetchval(
+				f"SELECT COUNT(*) FROM {self.table_name}"
+			)
