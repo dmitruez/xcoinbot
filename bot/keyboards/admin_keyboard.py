@@ -11,20 +11,22 @@ class AdminKeyboards:
 	def main_menu(admin_level: int):
 		"""Главное меню админ-панели в зависимости от уровня"""
 		builder = InlineKeyboardBuilder()
+		adjust = []
 
 		# Кнопки для всех админов
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
 			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users")
 		)
+		adjust.append(2)
 
 		# Кнопки для super admin (уровень 2+)
 		if admin_level >= 2:
 			builder.add(
-				InlineKeyboardButton(text="🔨 Бан/Разбан", callback_data="admin_ban"),
 				InlineKeyboardButton(text="📢 Управление каналами", callback_data="admin_channels"),
 				InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification")
 			)
+			adjust.extend([1, 1])
 
 		# Кнопки для developer (уровень 3)
 		if admin_level >= 3:
@@ -32,8 +34,9 @@ class AdminKeyboards:
 				InlineKeyboardButton(text="📜 Логи", callback_data="admin_logs"),
 				InlineKeyboardButton(text="💾 Бэкап", callback_data="admin_backup")
 			)
+			adjust.append(2)
 
-		builder.adjust(2)
+		builder.adjust(*adjust)
 		return builder.as_markup()
 
 	@staticmethod
@@ -294,6 +297,7 @@ class AdminKeyboards:
 			builder.button(text="⏳ Жду пригласительную ссылку", callback_data="_")
 		elif success:
 			builder.button(text="✅ Успешно добавлена ссылка", callback_data="_")
+			builder.button(text="Настроить основной/резервный канал", callback_data="admin_channels")
 		else:
 			builder.button(text="➕ Добавить ссылку на канал", callback_data=f"admin_link_channel_{channel_id}")
 

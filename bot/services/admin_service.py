@@ -95,8 +95,8 @@ class AdminService:
 			'active_users': active_users,
 			'banned_users': banned_users,
 			'channels_count': channels_count,
-			'main_channel': main_channel.title if main_channel else "Не установлен",
-			'backup_channel': backup_channel.title if backup_channel else "Не установлен"
+			'main_channel': f"<a src='{main_channel.link}'>{main_channel.title}</a>" if main_channel else "Не установлен",
+			'backup_channel': f"<a src='{backup_channel.link}'>{backup_channel.title}</a>" if backup_channel else "Не установлен"
 		}
 
 	async def get_period_stats(self, start_date: datetime, end_date: datetime) -> Dict[str, any]:
@@ -127,7 +127,8 @@ class AdminService:
 
 		return stats
 
-	async def get_logs(self) -> List | None:
+	@staticmethod
+	async def get_logs() -> List | None:
 		"""Получение файла логов"""
 		try:
 			log_dir = Path("logs")
