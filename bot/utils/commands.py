@@ -1,6 +1,6 @@
 # Third party
 from aiogram import Bot
-from aiogram.exceptions import TelegramNotFound
+from aiogram.exceptions import TelegramNotFound, TelegramBadRequest
 from aiogram.types import BotCommand, BotCommandScopeChat, BotCommandScopeDefault
 
 from ..config import Config
@@ -14,15 +14,14 @@ async def setup_commands(bot: Bot, services: Services):
 	]
 
 	regular_admin_commands = [
-		BotCommand(command='/stats', description="Статистика пользователей"),
-		BotCommand(command='/admin', description="Админ панель")
+		BotCommand(command='/admin', description="Админ панель"),
+		BotCommand(command='/stats', description="Статистика пользователей")
 	]
 
 	super_admin_commands = [
 		BotCommand(command='/ban', description="ПИШИТЕ /ban {ID} Выключить уведомления по ID"),
 		BotCommand(command='/unban', description="ПИШИТЕ /unban {ID} Включить уведомления по ID"),
-		BotCommand(command='/set_backup_channel', description="Назначить резервный канал"),
-		BotCommand(command='/set_main_channel', description="Назначить основной канал"),
+		BotCommand(command='/edit_channels', description="Назначить основной/резервный канал"),
 		BotCommand(command='/edit_notification', description="Измненение сообщения рассылки")
 	]
 
@@ -42,7 +41,7 @@ async def setup_commands(bot: Bot, services: Services):
 		try:
 			await bot.set_my_commands(regular_admin_commands,
 									  scope=BotCommandScopeChat(chat_id=regular_admin.user_id))
-		except TelegramNotFound:
+		except (TelegramNotFound, TelegramBadRequest):
 			pass
 
 	for super_admin in super_admins:
@@ -50,7 +49,7 @@ async def setup_commands(bot: Bot, services: Services):
 			await bot.set_my_commands(regular_admin_commands + super_admin_commands,
 									  scope=BotCommandScopeChat(chat_id=super_admin.user_id)
 									  )
-		except TelegramNotFound:
+		except (TelegramNotFound, TelegramBadRequest):
 			pass
 
 	for developer_id in Config.DEVELOPERS_IDS:
@@ -58,7 +57,7 @@ async def setup_commands(bot: Bot, services: Services):
 			await bot.set_my_commands(regular_admin_commands + super_admin_commands + developer_commands,
 									  scope=BotCommandScopeChat(chat_id=developer_id)
 									  )
-		except TelegramNotFound:
+		except (TelegramNotFound, TelegramBadRequest):
 			pass
 
 

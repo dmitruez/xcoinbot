@@ -1,6 +1,8 @@
 from aiogram import Router, types, F
 from aiogram.enums import ParseMode
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.methods import delete_message
 
 from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
 from xcoinbot.bot.services import Services
@@ -10,16 +12,33 @@ from xcoinbot.bot.states.admin_states import NotificationStates
 router = Router(name=__name__)
 
 
+@router.message(Command('edit_notification'))
+async def redirect_notification_menu(message: types.Message, state: FSMContext):
+	await notification_menu(message, state)
+
+
 @router.callback_query(F.data == "admin_notification")
-async def notification_menu(callback: types.CallbackQuery):
+async def notification_menu(callback: types.CallbackQuery | types.Message, state: FSMContext):
 	"""Меню управления уведомлениями"""
-	await callback.message.edit_text(
-		"📝 <b>Управление рассылкой</b>\n\n"
-		"Здесь вы можете настроить шаблон уведомления и запустить рассылку.",
-		parse_mode=ParseMode.HTML,
-		reply_markup=AdminKeyboards.notification_menu()
-	)
-	await callback.answer()
+	state_data = await state.get_data()
+	if delete_message := state_data.get("delete_message"):
+		await delete_message.delete()
+		await state.clear()
+
+	if isinstance(callback, types.CallbackQuery):
+
+		await callback.message.edit_text(
+			"📝 <b>Управление рассылкой</b>\n\n"
+			"Здесь вы можете настроить шаблон уведомления и запустить рассылку.",
+			reply_markup=AdminKeyboards.notification_menu()
+		)
+		await callback.answer()
+	else:
+		await callback.answer(
+			"📝 <b>Управление рассылкой</b>\n\n"
+			"Здесь вы можете настроить шаблон уведомления и запустить рассылку.",
+			reply_markup=AdminKeyboards.notification_menu()
+		)
 
 
 @router.callback_query(F.data == "admin_edit_text")
@@ -32,7 +51,6 @@ async def edit_text(callback: types.CallbackQuery, state: FSMContext, services: 
 		"• <code>&title</code> - название канала\n"
 		"• <code>&link</code> - ссылка на канал\n\n"
 		"Текущий текст:\n<pre>{}</pre>".format(template.text),
-		parse_mode=ParseMode.HTML,
 		reply_markup=AdminKeyboards.back_to_notification()
 	)
 	await state.set_state(NotificationStates.EDIT_TEXT)
@@ -63,7 +81,7 @@ async def manage_notification_buttons(callback: types.CallbackQuery, services: S
 
 	await callback.message.edit_text(
 		f"🔘 <b>Управление кнопками уведомления</b>\n\n{text}",
-		parse_mode=ParseMode.HTML,
+
 		reply_markup=AdminKeyboards.buttons_menu()
 	)
 	await callback.answer()
@@ -150,33 +168,41 @@ async def clear_buttons(callback: types.CallbackQuery, services: Services):
 
 
 @router.callback_query(F.data == "admin_preview_notification")
-async def preview_notification(callback: types.CallbackQuery, services: Services):
+async def preview_notification(callback: types.CallbackQuery, state: FSMContext, services: Services):
 	"""Предпросмотр уведомления"""
 
 	backup_channel = await services.channel.get_backup_channel()
+	if not backup_channel:
+		await callback.message.answer(
+			f"❌<b>РЕЗЕРВНЫЙ КАНАЛ НЕ НАСТРОЕН</b> ❌\n\n"
+			f"Пожалуйста добавьте его в ближайшее время"
+		)
+		return
 	text, keyboard = await services.notification.format_notification(backup_channel)
 
 	await callback.message.delete()
 	await callback.message.answer(
 		"👀 <b>Предпросмотр уведомления:</b>",
-		parse_mode=ParseMode.HTML
+		reply_markup=AdminKeyboards.back_to_notification()
 	)
-	await callback.message.answer(
+	delete_message = await callback.message.answer(
 		text,
 		reply_markup=keyboard,
 		disable_web_page_preview=True
 	)
+	await state.update_data(delete_message=delete_message)
 	await callback.answer()
 
-# @router.callback_query(F.data == "admin_send_notification")
-# async def send_notification_confirmation(callback: types.CallbackQuery, services: Services):
-# 	"""Подтверждение отправки рассылки"""
+@router.callback_query(F.data == "admin_send_notification")
+async def send_notification_confirmation(callback: types.CallbackQuery, services: Services):
+	"""Подтверждение отправки рассылки"""
+	await callback.answer("❌ Пока в разработке ❌")
 # 	user_count = await services.user.get_users_for_notification()
 # 	await callback.message.edit_text(
 # 		f"✉️ <b>Подтвердите отправку рассылки</b>\n\n"
 # 		f"Уведомление будет отправлено <b>всем пользователям</b> (всего: {user_count}).\n"
 # 		"Вы уверены, что хотите начать рассылку?",
-# 		parse_mode=ParseMode.HTML,
+#
 # 		reply_markup=AdminKeyboards.confirm_send_menu()
 # 	)
 # 	await callback.answer()
@@ -202,7 +228,7 @@ async def preview_notification(callback: types.CallbackQuery, services: Services
 # 		f"• Успешно отправлено: <b>{success_count}</b>\n"
 # 		f"• Не удалось отправить: <b>{total_users - success_count}</b>\n"
 # 		f"• Всего получателей: <b>{total_users}</b>",
-# 		parse_mode=ParseMode.HTML,
+#
 # 		reply_markup=AdminKeyboards.back_to_notification()
 # 	)
 # 	await callback.answer()

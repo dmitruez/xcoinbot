@@ -34,8 +34,8 @@ async def send_captcha(message: Message, state: FSMContext, services: Services):
 async def check_captcha(message: types.Message, services: Services, state: FSMContext):
 	"""Проверка введенной капчи"""
 	await message.delete()
-	if len(message.text) > 6:
-		return
+	# if len(message.text) > 6:
+	# 	return
 	user_id = message.from_user.id
 	user_input = message.text.strip()
 
@@ -51,28 +51,36 @@ async def check_captcha(message: types.Message, services: Services, state: FSMCo
 		await services.user.mark_captcha_passed(user_id)
 		await state.clear()
 
-		# Получаем основной канал
-		channel = await services.channel.get_main_channel()
-		if channel:
-			await message.answer(
-				f"✅ Капча успешно пройдена!\n"
-				f"Добро пожаловать! Основной канал: {channel.link}"
-			)
+		# Проверяем подписку на резервный канал
+		is_subscribed = await services.channel.check_subscription(message.from_user.id)
+		if is_subscribed:
+			# Получаем основной канал
+			channel = await services.channel.get_main_channel()
+			await captcha_message.delete()
+			if channel:
+				await message.answer(
+					f"✅ Капча успешно пройдена!\n"
+					f"Добро пожаловать! Основной канал: {channel.link}"
+				)
+			else:
+				await message.answer("✅ Капча успешно пройдена! Добро пожаловать!")
 		else:
-			await message.answer("✅ Капча успешно пройдена! Добро пожаловать!")
+			# Если не подписан - просим подписаться
+			backup_channel = await services.channel.get_backup_channel()
+			if backup_channel:
+				await message.answer(
+					"⚠ Для использования бота необходимо подписаться на резервный канал:\n"
+					f"@{backup_channel.username}" if backup_channel.username else
+					f"Ссылка: {backup_channel.link}"
+				)
+			else:
+				await message.answer("⚠ Резервный канал не настроен. Обратитесь к администратору.")
 	else:
-		# await message.answer(response)
-		pass
-
 		# Если остались попытки, показываем новую капчу
 		if attemps < 3:
 			captcha_text, image_path = await services.captcha.generate_captcha(user_id, attemps=attemps)
 			captcha_message = await captcha_message.edit_media(
-				media=InputMediaPhoto(media=FSInputFile(image_path)),
-				reply_markup=UserKeyboards.captcha_refresh()
-			)
-			await captcha_message.edit_caption(
-				caption=f"{response}\n\n🔐 Пожалуйста, попробуйте еще раз. Введите текст с изображения:",
+				media=InputMediaPhoto(media=FSInputFile(image_path), caption=f"{response}\n\n🔐 Пожалуйста, попробуйте еще раз. Введите текст с изображения:"),
 				reply_markup=UserKeyboards.captcha_refresh()
 			)
 			# Удаляем файл после отправки
@@ -80,6 +88,8 @@ async def check_captcha(message: types.Message, services: Services, state: FSMCo
 			await state.update_data(attemps=attemps, captcha_message=captcha_message)
 		else:
 			await services.user.ban_user(user_id)
+			await captcha_message.delete()
+			await message.answer(response)
 
 
 @router.callback_query(F.data == "refresh_captcha")
@@ -93,11 +103,7 @@ async def refresh_captcha_handler(callback: types.CallbackQuery, services: Servi
 
 	# Отправляем новую капчу
 	await callback.message.edit_media(
-		media=InputMediaPhoto(media=FSInputFile(image_path)),
-		reply_markup=UserKeyboards.captcha_refresh()
-	)
-	await callback.message.edit_caption(
-		caption="🔄 Капча обновлена. Введите текст с изображения:",
+		media=InputMediaPhoto(media=FSInputFile(image_path), caption="🔄 Капча обновлена. Введите текст с изображения:"),
 		reply_markup=UserKeyboards.captcha_refresh()
 	)
 	# Удаляем файл после отправки

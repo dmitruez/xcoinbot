@@ -17,7 +17,7 @@ class Services:
 		self.channel: ChannelService = ChannelService(bot, repos.channel)
 		self.notification: NotificationService = NotificationService(bot, repos)
 		self.subscriber: SubscriptionService = SubscriptionService(bot, repos.user, repos.channel)
-		self.user: UserService = UserService(repos.user)
+		self.user: UserService = UserService(repos.user, admin_repo=repos.admin)
 		self.admin: AdminService = AdminService(repos.admin, repos.user, repos.channel)
 
 
