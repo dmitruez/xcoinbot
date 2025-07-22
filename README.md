@@ -48,13 +48,12 @@
    ```python
    BOT_TOKEN = "ваш_токен_бота"
    DEVELOPERS_IDS=123456789
+   
    DB_NAME=postgres
    DB_PASSWORD=postgres
    DB_USER=postgres
    DB_HOST=localhost
    DB_PORT=5432
-   CAPTCHA_FONT=arialbd.ttf
-
    ```
 
 4. Добавьте бота в канал (резервный/основной):
