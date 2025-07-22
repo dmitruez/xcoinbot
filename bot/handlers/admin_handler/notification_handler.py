@@ -4,9 +4,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.methods import delete_message
 
-from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
-from xcoinbot.bot.services import Services
-from xcoinbot.bot.states.admin_states import NotificationStates
+from ...keyboards.admin_keyboard import AdminKeyboards
+from ...services import Services
+from ...states.admin_states import NotificationStates
 
 
 router = Router(name=__name__)

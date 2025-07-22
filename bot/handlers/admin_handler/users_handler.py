@@ -3,11 +3,11 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 
-from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
-from xcoinbot.bot.models import Admin
-from xcoinbot.bot.services import Services
-from xcoinbot.bot.states.admin_states import UserStates
-from xcoinbot.bot.utils.paginator import Paginator
+from ...keyboards.admin_keyboard import AdminKeyboards
+from ...models import Admin
+from ...services import Services
+from ...states.admin_states import UserStates
+from ...utils.paginator import Paginator
 
 
 router = Router(name=__name__)
