@@ -4,11 +4,11 @@ from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION, LEAVE_TRAN
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ChatMemberUpdated
 
-from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
-from xcoinbot.bot.models import Channel
-from xcoinbot.bot.services import Services
-from xcoinbot.bot.states.admin_states import ChannelsStates
-from xcoinbot.bot.utils.paginator import Paginator
+from ...keyboards.admin_keyboard import AdminKeyboards
+from ...models import Channel
+from ...services import Services
+from ...states.admin_states import ChannelsStates
+from ...utils.paginator import Paginator
 
 
 router = Router(name=__name__)

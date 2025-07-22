@@ -2,9 +2,9 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
 
-from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
-from xcoinbot.bot.models import Admin
-from xcoinbot.bot.services import Services
+from ...keyboards.admin_keyboard import AdminKeyboards
+from ...models import Admin
+from ...services import Services
 
 
 router = Router(name=__name__)

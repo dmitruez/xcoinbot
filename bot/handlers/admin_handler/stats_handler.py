@@ -5,9 +5,9 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
-from xcoinbot.bot.services import Services
-from xcoinbot.bot.states.admin_states import StatsStates
+from ...keyboards.admin_keyboard import AdminKeyboards
+from ...services import Services
+from ...states.admin_states import StatsStates
 
 
 router = Router(name=__name__)
