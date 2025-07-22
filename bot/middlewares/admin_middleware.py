@@ -7,6 +7,7 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 
+from ..config import Config
 from ..services import Services
 
 
@@ -43,14 +44,16 @@ class AdminMiddleware(BaseMiddleware):
 		required_level = get_command_access_level(command)
 
 		if required_level > 0:
-			# Проверяем права пользователя
-
 			admin = await self.services.admin.get_admin(event.from_user.id)
+			data['admin'] = admin  # Добавляем объект админа в data
+
+			# Проверяем права пользователя
+			if event.from_user.id in Config.DEVELOPERS_IDS:
+				return await handler(event, data)
+
 			if not admin or admin.level < required_level:
 				await event.answer("⛔ У вас недостаточно прав для этой команды")
 				return
-
-			data['admin'] = admin  # Добавляем объект админа в data
 
 		return await handler(event, data)
 

@@ -10,6 +10,15 @@ from ...services import Services
 router = Router(name=__name__)
 
 
+@router.message(Command('channel'))
+async def get_main_channel(message: types.Message, services: Services):
+	channel = await services.channel.get_main_channel()
+	await message.answer(
+		f"Актуальная ссылка на канал: 👇\n"
+		f"<b><a href='{channel.link}'>{channel.title}</a></b>"
+	)
+
+
 @router.message(Command("admin"))
 async def admin_panel(message: types.Message, admin: Admin):
 	"""Главное меню админ-панели"""

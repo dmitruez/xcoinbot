@@ -1,4 +1,4 @@
-from aiogram import Router, types, F
+from aiogram import Router, types, F, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
@@ -7,7 +7,7 @@ from ...keyboards.admin_keyboard import AdminKeyboards
 from ...models import Admin
 from ...services import Services
 from ...states.admin_states import UserStates
-from ...utils.paginator import Paginator
+from ...utils.commands import set_commands_to_user
 
 
 router = Router(name=__name__)
@@ -303,7 +303,7 @@ async def unban_user(callback: types.CallbackQuery, services: Services, admin: A
 
 
 @router.callback_query(F.data.startswith("admin_grant_"))
-async def grant_admin_handler(callback: types.CallbackQuery, services: Services, admin: Admin):
+async def grant_admin_handler(callback: types.CallbackQuery, bot: Bot, services: Services, admin: Admin):
 	"""Назначение пользователя администратором"""
 	user_id = int(callback.data.split("_")[2])
 	user = await services.user.get_user_by_id(user_id)
@@ -332,12 +332,13 @@ async def grant_admin_handler(callback: types.CallbackQuery, services: Services,
 			parse_mode=ParseMode.HTML,
 			reply_markup=AdminKeyboards.profile_menu(user, is_admin, level, access_level=access_level)
 		)
+		await set_commands_to_user(bot, user_id, level)
 	else:
 		await callback.answer("❌ Ошибка назначения админа", show_alert=True)
 
 
 @router.callback_query(F.data.startswith("admin_revoke_"))
-async def revoke_admin_handler(callback: types.CallbackQuery, services: Services, admin: Admin):
+async def revoke_admin_handler(callback: types.CallbackQuery, bot: Bot, services: Services, admin: Admin):
 	"""Снятие прав администратора"""
 	user_id = int(callback.data.split("_")[2])
 
@@ -360,12 +361,13 @@ async def revoke_admin_handler(callback: types.CallbackQuery, services: Services
 			parse_mode=ParseMode.HTML,
 			reply_markup=AdminKeyboards.profile_menu(user, is_admin, level, access_level=access_level)
 		)
+		await set_commands_to_user(bot, user_id, level)
 	else:
 		await callback.answer("❌ Ошибка отзыва прав", show_alert=True)
 
 
 @router.callback_query(F.data.startswith("admin_setlevel_"))
-async def set_admin_level_handler(callback: types.CallbackQuery, services: Services, admin: Admin):
+async def set_admin_level_handler(callback: types.CallbackQuery, bot: Bot, services: Services, admin: Admin):
 	"""Установка уровня администратора"""
 	parts = callback.data.split("_")
 	user_id = int(parts[2])
@@ -390,5 +392,6 @@ async def set_admin_level_handler(callback: types.CallbackQuery, services: Servi
 			parse_mode=ParseMode.HTML,
 			reply_markup=AdminKeyboards.profile_menu(user, is_admin, level, access_level=access_level)
 		)
+		await set_commands_to_user(bot, user_id, level)
 	else:
 		await callback.answer("❌ Ошибка изменения уровня", show_alert=True)
