@@ -2,6 +2,7 @@ from datetime import datetime
 
 from aiogram import Router, types, F
 from aiogram.enums import ParseMode
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from xcoinbot.bot.keyboards.admin_keyboard import AdminKeyboards
@@ -12,8 +13,15 @@ from xcoinbot.bot.states.admin_states import StatsStates
 router = Router(name=__name__)
 
 
+@router.message(Command('stats'))
+async def redirect_admin_stats(message: types.Message, services: Services):
+	await admin_stats(message, services)
+
+
+
+
 @router.callback_query(F.data == "admin_stats")
-async def admin_stats(callback: types.CallbackQuery, services: Services):
+async def admin_stats(callback: types.CallbackQuery | types.Message, services: Services):
 	"""Статистика бота"""
 	stats = await services.admin.get_stats()
 
@@ -27,12 +35,17 @@ async def admin_stats(callback: types.CallbackQuery, services: Services):
 		f"🔶 Резервный: {stats['backup_channel']}"
 	)
 
-	await callback.message.edit_text(
-		text,
-		parse_mode=ParseMode.HTML,
-		reply_markup=AdminKeyboards.back_to_main()
-	)
-	await callback.answer()
+	if isinstance(callback, types.CallbackQuery):
+		await callback.message.edit_text(
+			text,
+			reply_markup=AdminKeyboards.back_to_main()
+		)
+		await callback.answer()
+	else:
+		await callback.answer(
+			text,
+			reply_markup=AdminKeyboards.back_to_main()
+		)
 
 
 @router.callback_query(F.data == "admin_stats_period")
@@ -41,7 +54,7 @@ async def request_stats_period(callback: types.CallbackQuery, state: FSMContext)
 	await callback.message.edit_text(
 		"📅 <b>Статистика за период</b>\n\n"
 		"Введите начальную дату в формате ГГГГ-ММ-ДД:",
-		parse_mode=ParseMode.HTML,
+
 		reply_markup=AdminKeyboards.back_to_main()
 	)
 	await state.set_state(StatsStates.WAITING_START_DATE)

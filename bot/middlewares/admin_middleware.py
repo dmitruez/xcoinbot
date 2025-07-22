@@ -5,7 +5,7 @@ from typing import Any, Awaitable, Callable, Dict
 
 # Third party
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from ..services import Services
 
@@ -17,7 +17,7 @@ access_map = {
 	'/admin': 1,
 	'/ban': 2,
 	'/unban': 2,
-	'/set_backup_channel': 2,
+	'/edit_channels': 2,
 	'/edit_notification': 2,
 	'/logs': 3,
 	'/backup': 3
@@ -52,6 +52,21 @@ class AdminMiddleware(BaseMiddleware):
 
 			data['admin'] = admin  # Добавляем объект админа в data
 
+		return await handler(event, data)
+
+
+class AdminCallbackMiddleware(BaseMiddleware):
+	def __init__(self, services: Services) -> None:
+		self.services = services
+
+	async def __call__(
+			self,
+			handler: Callable[[CallbackQuery, Dict[str, Any]], Awaitable[Any]],
+			event: CallbackQuery,
+			data: Dict[str, Any],
+	) -> Any:
+		admin = await self.services.admin.get_admin(event.from_user.id)
+		data['admin'] = admin  # Добавляем объект админа в data
 		return await handler(event, data)
 
 

@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from aiogram.types import InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from ..models import User
@@ -11,20 +11,22 @@ class AdminKeyboards:
 	def main_menu(admin_level: int):
 		"""Главное меню админ-панели в зависимости от уровня"""
 		builder = InlineKeyboardBuilder()
+		adjust = []
 
 		# Кнопки для всех админов
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
 			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users")
 		)
+		adjust.append(2)
 
 		# Кнопки для super admin (уровень 2+)
 		if admin_level >= 2:
 			builder.add(
-				InlineKeyboardButton(text="🔨 Бан/Разбан", callback_data="admin_ban"),
 				InlineKeyboardButton(text="📢 Управление каналами", callback_data="admin_channels"),
 				InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification")
 			)
+			adjust.extend([1, 1])
 
 		# Кнопки для developer (уровень 3)
 		if admin_level >= 3:
@@ -32,8 +34,9 @@ class AdminKeyboards:
 				InlineKeyboardButton(text="📜 Логи", callback_data="admin_logs"),
 				InlineKeyboardButton(text="💾 Бэкап", callback_data="admin_backup")
 			)
+			adjust.append(2)
 
-		builder.adjust(2)
+		builder.adjust(*adjust)
 		return builder.as_markup()
 
 	@staticmethod
@@ -41,30 +44,105 @@ class AdminKeyboards:
 		builder = InlineKeyboardBuilder()
 		builder.add(
 			InlineKeyboardButton(text="🔍 Поиск пользователя", callback_data="admin_search_user"),
-			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"),
+			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"), # НЕ РЕАЛИЗОВАНО
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
 		)
 		builder.adjust(1)
 		return builder.as_markup()
 
 	@staticmethod
-	def profile_menu(user: User):
+	def search_menu():
+		"""Меню поиска пользователей"""
 		builder = InlineKeyboardBuilder()
-		button_ban = InlineKeyboardButton(text="🚫 Забанить", callback_data=f"admin_ban_{user.user_id}") \
-			if not user.is_banned else InlineKeyboardButton(text="✅ Разбанить",
-															callback_data=f"admin_unban_{user.user_id}")
+		builder.row(
+			InlineKeyboardButton(text="🔍 По username", callback_data="admin_search_username"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="🔍 По имени/фамилии", callback_data="admin_search_nickname"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="🔍 По ID", callback_data="admin_search_id"),
+			width=1
+		)
+		builder.row(
+			InlineKeyboardButton(text="◀ Назад", callback_data="admin_users"),
+			width=1
+		)
+		return builder.as_markup()
+
+	@staticmethod
+	def cancel_search():
+		"""Клавиатура отмены поиска"""
+		builder = InlineKeyboardBuilder()
+		builder.add(InlineKeyboardButton(
+			text="❌ Отменить поиск",
+			callback_data="admin_users"
+		))
+		return builder.as_markup()
+
+	@staticmethod
+	def back_to_search():
+		"""Кнопка возврата к поиску"""
+		builder = InlineKeyboardBuilder()
+		builder.add(InlineKeyboardButton(
+			text="🔙 Вернуться к поиску",
+			callback_data="admin_search_menu"
+		))
+		return builder.as_markup()
+
+
+	@staticmethod
+	def profile_menu(user: User, is_admin: bool=False, admin_level: int=None, access_level: int = None) -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		adjust = []
 
 		button_notif = InlineKeyboardButton(text="❌ Не уведомлять пользователя",
-											callback_data=f"admin_unnotif_{user.user_id} ") \
-			if user.should_notify else InlineKeyboardButton(text="✔️ Уведомлять пользователя",
-															callback_data=f"admin_notif_{user.user_id}")
+											callback_data=f"admin_ban_{user.user_id} ") \
+			if user.should_notify else InlineKeyboardButton(text="✅ Уведомлять пользователя",
+															callback_data=f"admin_unban_{user.user_id}")
+		adjust.append(1)
+		builder.add(
+			button_notif
+		)
+
+
+		if access_level > 1:
+
+			# Назначение/снятие админа
+			if is_admin:
+				builder.add(InlineKeyboardButton(
+					text="👑 Снять админа",
+					callback_data=f"admin_revoke_{user.user_id}"
+				))
+			else:
+				builder.add(InlineKeyboardButton(
+					text="👑 Назначить админом",
+					callback_data=f"admin_grant_{user.user_id}"
+				))
+
+			adjust.append(1)
+
+			# Управление уровнем админа
+			if is_admin:
+				builder.row(
+					InlineKeyboardButton(text=f"Текущий уровень: {admin_level}", callback_data="no_action"),
+					width=1
+				)
+				for level in [1, 2, 3]:
+					if level != admin_level:
+						builder.add(InlineKeyboardButton(
+							text=f"Установить уровень {level}",
+							callback_data=f"admin_setlevel_{user.user_id}_{level}"
+						))
+				adjust.extend([1, 2])
 
 		builder.add(
-			button_ban,
-			button_notif,
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_users")
 		)
-		builder.adjust(1)
+		adjust.append(1)
+		builder.adjust(*adjust)
 		return builder.as_markup()
 
 	@staticmethod
@@ -110,7 +188,7 @@ class AdminKeyboards:
 			InlineKeyboardButton(text="🗑 Очистить все", callback_data="admin_clear_buttons"),
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_notification")
 		)
-		builder.adjust(2)
+		builder.adjust(2, 1, 1)
 		return builder.as_markup()
 
 	@staticmethod
@@ -171,6 +249,9 @@ class AdminKeyboards:
 			width=1
 		)
 		return builder.as_markup()
+
+
+
 
 	def channels_list(self, channels: List[Tuple[str, str]], current_page: int, total_pages: int, prefix: str):
 		"""Клавиатура со списком каналов и пагинацией"""
@@ -255,7 +336,9 @@ class AdminKeyboards:
 			builder.button(text="⏳ Жду пригласительную ссылку", callback_data="_")
 		elif success:
 			builder.button(text="✅ Успешно добавлена ссылка", callback_data="_")
+			builder.button(text="Настроить основной/резервный канал", callback_data="admin_channels")
 		else:
 			builder.button(text="➕ Добавить ссылку на канал", callback_data=f"admin_link_channel_{channel_id}")
 
+		builder.adjust(1)
 		return builder.as_markup()

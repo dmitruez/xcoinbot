@@ -16,7 +16,7 @@ async def start_command(message: types.Message, services: Services, state: FSMCo
 	user_id = message.from_user.id
 
 	# Проверяем существование пользователя
-	user = await services.user.get_user(user_id)
+	user = await services.user.get_user_by_id(user_id)
 	if not user:
 		# Создаем нового пользователя
 		user = User(

@@ -1,6 +1,6 @@
 from aiogram import Router, types, F, Bot
-from aiogram.enums import ParseMode, ChatType
-from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION, LEAVE_TRANSITION
+from aiogram.enums import ChatType
+from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION, LEAVE_TRANSITION, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ChatMemberUpdated
 
@@ -14,17 +14,30 @@ from xcoinbot.bot.utils.paginator import Paginator
 router = Router(name=__name__)
 
 
+@router.message(Command("edit_channels"))
+async def redirect_admin_channels(message: types.Message, state: FSMContext):
+	await admin_channels(message, state)
+
+
 @router.callback_query(F.data == "admin_channels")
-async def admin_channels(callback: types.CallbackQuery, state: FSMContext):
+async def admin_channels(callback: types.CallbackQuery | types.Message, state: FSMContext):
 	"""Управление каналами"""
-	await callback.message.edit_text(
-		"📢 <b>Управление каналами</b>\n\n"
-		"Выберите действие:",
-		parse_mode=ParseMode.HTML,
-		reply_markup=AdminKeyboards.channels_menu()
-	)
+	if isinstance(callback, types.CallbackQuery):
+		await callback.message.edit_text(
+			"📢 <b>Управление каналами</b>\n\n"
+			"Выберите действие:",
+			reply_markup=AdminKeyboards.channels_menu()
+		)
+		await callback.answer()
+	else:
+		await callback.answer(
+			"📢 <b>Управление каналами</b>\n\n"
+			"Выберите действие:",
+			reply_markup=AdminKeyboards.channels_menu()
+		)
+
 	await state.set_state(ChannelsStates.CHANNELS)
-	await callback.answer()
+
 
 
 @router.callback_query(F.data == "admin_change_main")
@@ -47,8 +60,8 @@ async def start_select_main_channel(callback: types.CallbackQuery, state: FSMCon
 	if main_channel:
 		await callback.message.edit_text(
 			"🟢 <b>Выберите основной канал:</b> 🟢\n\n"
-			f"Текущий канал: <a src='{main_channel.link}'>{main_channel.title}</a>\n\n",
-			parse_mode=ParseMode.HTML,
+			f"Текущий канал: <a href='{main_channel.link}'>{main_channel.title}</a>\n\n",
+
 			reply_markup=AdminKeyboards().channels_list(
 				buttons,
 				page.page,
@@ -60,7 +73,7 @@ async def start_select_main_channel(callback: types.CallbackQuery, state: FSMCon
 		await callback.message.edit_text(
 			"🟢 <b>Выберите основной канал:</b> 🟢\n\n"
 			"Текущий канал: <b>НЕ УСТАНОВЛЕН</b>",
-			parse_mode=ParseMode.HTML,
+
 			reply_markup=AdminKeyboards().channels_list(
 				buttons,
 				page.page,
@@ -85,7 +98,7 @@ async def set_main_channel(callback: types.CallbackQuery, services: Services):
 	await services.channel.set_main_channel(channel_id)
 	await callback.message.edit_text(
 		f"✅ Основной канал установлен: <b>{channel.title}</b>",
-		parse_mode=ParseMode.HTML,
+
 		reply_markup=AdminKeyboards.back_to_main()
 	)
 	await callback.answer()
@@ -111,8 +124,8 @@ async def start_select_backup_channel(callback: types.CallbackQuery, state: FSMC
 	if backup_channel:
 		await callback.message.edit_text(
 			"🔶 <b>Выберите резервный канал:</b> 🔶\n\n"
-			f"Текущий канал: <a src='{backup_channel.link}'>{backup_channel.title}</a>",
-			parse_mode=ParseMode.HTML,
+			f"Текущий канал: <a href='{backup_channel.link}'>{backup_channel.title}</a>",
+
 			reply_markup=AdminKeyboards().channels_list(
 				buttons,
 				page.page,
@@ -124,7 +137,7 @@ async def start_select_backup_channel(callback: types.CallbackQuery, state: FSMC
 		await callback.message.edit_text(
 			"🔶 <b>Выберите резервный канал:</b> 🔶\n\n"
 			f"Текущий канал: <b>НЕ УСТАНОВЛЕН</b>",
-			parse_mode=ParseMode.HTML,
+
 			reply_markup=AdminKeyboards().channels_list(
 				buttons,
 				page.page,
@@ -149,7 +162,7 @@ async def set_backup_channel(callback: types.CallbackQuery, services: Services):
 	await services.channel.set_backup_channel(channel_id)
 	await callback.message.edit_text(
 		f"✅ Резервный канал установлен: <b>{channel.title}</b>",
-		parse_mode=ParseMode.HTML,
+
 		reply_markup=AdminKeyboards.back_to_main()
 	)
 	await callback.answer()
@@ -177,7 +190,7 @@ async def paginate_channels(callback: types.CallbackQuery, services: Services, s
 
 	await callback.message.edit_text(
 		text,
-		parse_mode=ParseMode.HTML,
+
 		reply_markup=AdminKeyboards().channels_list(
 			buttons,
 			page.page,
@@ -277,9 +290,9 @@ async def leave_channel(update: ChatMemberUpdated, services: Services):
 					try:
 						await update.bot.send_message(
 							admin.user_id,
-							f"⚠️ Основной канал {channel.title} был удален!\n"
-							f"Автоматически назначен новый основной канал: {backup_channel.title}\n"
-							f"Уведомления отправлены {data['success']} пользователям\n"
+							f"⚠️ Основной канал <b>{channel.title}</b> был удален!\n"
+							f"Автоматически назначен новый основной канал: <a href='{backup_channel.link}'>{backup_channel.title}</a>\n"
+							f"Уведомления отправлены <b>{data['success']}</b> пользователям\n"
 							f"Пользователи которым не удалось отправить уведомления: {data['failures']}"
 						)
 					except Exception:
@@ -312,17 +325,17 @@ async def leave_channel(update: ChatMemberUpdated, services: Services):
 					except Exception:
 						continue
 
-			# for admin_id in Config.DEVELOPERS_IDS:
-			# 	try:
-			# 		await update.bot.send_message(
-			# 			admin_id,
-			# 			f"🚨 КРИТИЧЕСКОЕ СОБЫТИЕ!\n"
-			# 			f"Основной канал {channel.title} был удален, "
-			# 			f"а резервный канал не настроен!\n"
-			# 			f"Немедленно настройте новый канал!"
-			# 		)
-			# 	except Exception:
-			# 		continue
+		# for admin_id in Config.DEVELOPERS_IDS:
+		# 	try:
+		# 		await update.bot.send_message(
+		# 			admin_id,
+		# 			f"🚨 КРИТИЧЕСКОЕ СОБЫТИЕ!\n"
+		# 			f"Основной канал {channel.title} был удален, "
+		# 			f"а резервный канал не настроен!\n"
+		# 			f"Немедленно настройте новый канал!"
+		# 		)
+		# 	except Exception:
+		# 		continue
 
 		# Удаляем информацию о канале из БД
 		await services.channel.delete_channel(channel)

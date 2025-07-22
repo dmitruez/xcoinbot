@@ -4,7 +4,7 @@ import asyncpg
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.exceptions import TelegramNotFound
+from aiogram.exceptions import TelegramNotFound, TelegramBadRequest
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from .config import Config
@@ -41,7 +41,7 @@ async def start_bot(bot: Bot, dp: Dispatcher):
 		for admin in super_admins:
 			try:
 				await bot.send_message(admin.user_id, text="🚀 Бот Запущен 🚀")
-			except TelegramNotFound:
+			except (TelegramNotFound, TelegramBadRequest):
 				pass
 
 	# for developer_id in Config.DEVELOPERS_IDS:

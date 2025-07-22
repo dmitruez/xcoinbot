@@ -41,7 +41,7 @@ class SubscriptionService:
 		"""
 		try:
 			# Проверяем/создаем пользователя
-			user = await self.user_repo.get(user_id)
+			user = await self.user_repo.get_by_id(user_id)
 			if not user:
 				user = await self.user_repo.create(User(
 					user_id=user_id,

@@ -18,6 +18,9 @@ class NotificationStates(StatesGroup):
 class UserStates(StatesGroup):
 	USERS = State()
 	CHOOSE_USER = State()
+	WAITING_QUERY = State()
+	WAITING_ID = State()
+
 
 
 class ChannelsStates(StatesGroup):

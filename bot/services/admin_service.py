@@ -26,29 +26,22 @@ class AdminService:
 			logger.error(f"Error getting admin {user_id}: {e}")
 			return None
 
-	async def add_admin(self, user_id: int, username: Optional[str], full_name: str, level: int = 1) -> bool:
+	async def add_admin(self, admin: Admin) -> bool:
 		"""Добавление нового администратора"""
-		if level not in (1, 2):
+		if admin.level not in (1, 2, 3):
 			return False
-
-		admin = Admin(
-			user_id=user_id,
-			username=username,
-			full_name=full_name,
-			level=level
-		)
 
 		try:
 			await self.admin_repo.create(admin)
-			logger.info(f"Added new admin: {user_id} (level {level})")
+			logger.info(f"Added new admin: {admin.user_id} (level {admin.level})")
 			return True
 		except Exception as e:
-			logger.error(f"Error adding admin {user_id}: {e}")
+			logger.error(f"Error adding admin {admin.user_id}: {e}")
 			return False
 
 	async def update_admin_level(self, user_id: int, new_level: int) -> bool:
 		"""Изменение уровня администратора"""
-		if new_level not in (1, 2):
+		if new_level not in (1, 2, 3):
 			return False
 
 		try:
@@ -95,8 +88,8 @@ class AdminService:
 			'active_users': active_users,
 			'banned_users': banned_users,
 			'channels_count': channels_count,
-			'main_channel': main_channel.title if main_channel else "Не установлен",
-			'backup_channel': backup_channel.title if backup_channel else "Не установлен"
+			'main_channel': f"<a href='{main_channel.link}'>{main_channel.title}</a>" if main_channel else "Не установлен",
+			'backup_channel': f"<a href='{backup_channel.link}'>{backup_channel.title}</a>" if backup_channel else "Не установлен"
 		}
 
 	async def get_period_stats(self, start_date: datetime, end_date: datetime) -> Dict[str, any]:
@@ -127,7 +120,8 @@ class AdminService:
 
 		return stats
 
-	async def get_logs(self) -> List | None:
+	@staticmethod
+	async def get_logs() -> List | None:
 		"""Получение файла логов"""
 		try:
 			log_dir = Path("logs")

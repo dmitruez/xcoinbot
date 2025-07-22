@@ -34,8 +34,8 @@ class AdminRepository(BaseRepository[Admin]):
 		"""Добавление нового администратора"""
 		query = f"""
         INSERT INTO {self.table_name} 
-        (user_id, username, full_name, level, created_at)
-        VALUES ($1, $2, $3, $4, $5)
+        (user_id, username, full_name, level)
+        VALUES ($1, $2, $3, $4)
         """
 		await self._execute(
 			query,

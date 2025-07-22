@@ -1,6 +1,7 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 
 from ..models import User
+from ..repositories import AdminRepository
 from ..repositories.user_repository import UserRepository
 from ..utils.loggers import services as logger
 
@@ -8,16 +9,50 @@ from ..utils.loggers import services as logger
 class UserService:
 	"""Сервис для работы с пользователями"""
 
-	def __init__(self, user_repo: UserRepository):
+	def __init__(self, user_repo: UserRepository, admin_repo: AdminRepository):
 		self.user_repo = user_repo
+		self.admin_repo = admin_repo
 
-	async def get_user(self, user_id: int) -> Optional[User]:
+	async def get_user_by_id(self, user_id: int=None) -> Optional[User]:
 		"""Получение пользователя по ID"""
 		try:
-			return await self.user_repo.get(user_id)
+			return await self.user_repo.get_by_id(user_id)
 		except Exception as e:
 			logger.error(f"Error getting user {user_id}: {e}")
 			return None
+
+	async def search_users(self, search_type: str, query: str) -> List[User]:
+		"""Поиск пользователей по типу поиска"""
+		query = query.strip()
+
+		if search_type == "username":
+			return await self.user_repo.get_by_username(query)
+		elif search_type == "nickname":
+			return await self.user_repo.get_by_nickname(query)
+		elif search_type == "id":
+			if query.isdigit():
+				user = await self.user_repo.get_by_id(int(query))
+				return [user] if user else []
+		return []
+
+	async def format_user_info(self, user: User) -> Tuple[str, bool, int]:
+		"""Форматирование информации о пользователе"""
+		admin = await self.admin_repo.get(user.user_id)
+
+		if admin:
+			admin_info = f"\n👑 Админ: Да (Уровень: {admin.level})"
+		else:
+			admin_info = "\n👑 Админ: Нет"
+
+		return (
+			f"👤 ID: <code>{user.user_id}</code>\n"
+			f"🆔 Username: @{user.username if user.username else 'нет'}\n"
+			f"👤 Имя: {user.full_name}\n"
+			f"📅 Дата регистрации: {user.join_date.strftime('%d.%m.%Y')}\n"
+			f"🔒 Статус бота: {'🟢 Активен' if user.is_active else '🔴 Заблокирован'}\n"
+			f"Уведомления: {'🟢 Включены' if user.should_notify else '🔴 Выключены'}\n"
+			f"{admin_info}"
+		), True if admin else False, admin.level if admin else None
 
 	async def create_user(self, user) -> User:
 		"""Создание нового пользователя"""
