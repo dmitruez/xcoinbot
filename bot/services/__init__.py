@@ -3,6 +3,7 @@ from aiogram import Bot
 from .admin_service import AdminService
 from .captcha_service import CaptchaService
 from .channel_service import ChannelService
+from .exchange_service import ExchangeService
 from .notifier_service import NotificationService
 from .subscriber_service import SubscriptionService
 from .user_service import UserService
@@ -19,6 +20,7 @@ class Services:
 		self.subscriber: SubscriptionService = SubscriptionService(bot, repos.user, repos.channel)
 		self.user: UserService = UserService(repos.user, admin_repo=repos.admin)
 		self.admin: AdminService = AdminService(repos.admin, repos.user, repos.channel)
+		self.exchange: ExchangeService = ExchangeService()
 
 
 def setup_services(bot: Bot, repos: Repositories) -> Services:
