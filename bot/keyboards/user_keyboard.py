@@ -12,3 +12,14 @@ class UserKeyboards:
 			callback_data="refresh_captcha"
 		))
 		return builder.as_markup()
+
+
+	@staticmethod
+	def exchange_direction():
+		"""Клавиатура для выбора направления обмена"""
+		builder = InlineKeyboardBuilder()
+		builder.add(
+			InlineKeyboardButton(text="BTC → USDT", callback_data="btc_usdt"),
+			InlineKeyboardButton(text="USDT → RUB", callback_data="usdt_rub")
+		)
+		return builder.as_markup()
