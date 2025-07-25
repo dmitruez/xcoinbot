@@ -16,17 +16,17 @@ class AdminKeyboards:
 		# Кнопки для всех админов
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
-			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users")
+			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users"),
+			InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification")
 		)
-		adjust.append(2)
+		adjust.extend([2, 1])
 
 		# Кнопки для super admin (уровень 2+)
 		if admin_level >= 2:
 			builder.add(
-				InlineKeyboardButton(text="📢 Управление каналами", callback_data="admin_channels"),
-				InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification")
+				InlineKeyboardButton(text="📢 Управление каналами", callback_data="admin_channels")
 			)
-			adjust.extend([1, 1])
+			adjust.append(1)
 
 		# Кнопки для developer (уровень 3)
 		if admin_level >= 3:

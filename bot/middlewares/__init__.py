@@ -9,5 +9,5 @@ def setup_middlewares(dp: Dispatcher) -> None:
 	"""Инициализация всех мидлварей"""
 	dp.message.middleware(AdminMiddleware(services=dp["services"]))
 	dp.update.outer_middleware.register(DataHandlerMiddleware(repos=dp["repos"], services=dp["services"]))
-	dp.message.middleware(SubscriptionMiddleware(services=dp["services"]))
+	dp.message.middleware.register(SubscriptionMiddleware(services=dp["services"]))
 	dp.callback_query.middleware.register(AdminCallbackMiddleware(services=dp["services"]))

@@ -16,10 +16,10 @@ access_map = {
 	'/channel': 0,
 	'/stats': 1,
 	'/admin': 1,
+	'/edit_notification': 1,
 	'/ban': 2,
 	'/unban': 2,
 	'/edit_channels': 2,
-	'/edit_notification': 2,
 	'/logs': 3,
 	'/backup': 3
 }
