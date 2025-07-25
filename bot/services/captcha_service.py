@@ -17,7 +17,7 @@ class TextCaptcha:
 
 	def __init__(self):
 		# Исключаем похожие символы
-		self._excluded_chars = 'lI1oO0'
+		self._excluded_chars = 'lI1oO0cC'
 		self._chars = [c for c in ascii_letters + digits if c not in self._excluded_chars]
 		self._length = 5
 		self._width = 240
@@ -26,7 +26,9 @@ class TextCaptcha:
 		self._temp_dir = "temp_captchas"
 		os.makedirs(self._temp_dir, exist_ok=True)
 
-	def _get_font_path(self) -> str:
+
+	@staticmethod
+	def _get_font_path() -> str:
 		"""Поиск доступного шрифта"""
 		font_paths = [
 			"assets/fonts/arial.ttf",
@@ -61,7 +63,8 @@ class TextCaptcha:
 
 		return text, file_path
 
-	async def cleanup(self, file_path: str):
+	@staticmethod
+	async def cleanup(file_path: str):
 		"""Удаление временного файла"""
 		if file_path and os.path.exists(file_path):
 			try:
@@ -100,7 +103,7 @@ class CaptchaService:
 		# Увеличиваем счетчик попыток
 		await self.captcha_repo.increment_attempts(user_id)
 
-		if user_input.strip() != captcha.text:
+		if user_input.strip().lower() != captcha.text.lower():
 			attempts = await self.captcha_repo.get_attempts(user_id)
 			remaining = 3 - attempts
 

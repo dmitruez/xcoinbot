@@ -1,4 +1,6 @@
 # Проверка капчи
+from datetime import datetime, timedelta
+
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, FSInputFile, InputMediaPhoto
@@ -12,6 +14,20 @@ router = Router(name=__name__)
 
 
 async def send_captcha(message: Message, state: FSMContext, services: Services):
+	state_data = await state.get_data()
+	now = datetime.now()
+	attemps = state_data.get("attemps", 0)
+	refreshes = state_data.get("refreshes", 0)
+
+	if ban := state_data.get("ban"):
+		if now < ban:
+			time = ban - now
+			minutes, seconds = divmod(time.seconds, 60)
+			await message.answer(
+				"❌ У вас закончились обновления каптчи ❌\n\n"
+				f"До разбана: {minutes}:{seconds}"
+			)
+			return
 	user_id = message.from_user.id
 	# Генерируем и отправляем капчу
 	captcha_text, image_path = await services.captcha.generate_captcha(user_id)
@@ -25,7 +41,7 @@ async def send_captcha(message: Message, state: FSMContext, services: Services):
 	)
 	# Удаляем файл после отправки
 	await services.captcha.cleanup(image_path)
-	await state.update_data(captcha_message=captcha_message, attemps=0)
+	await state.update_data(captcha_message=captcha_message, attemps=attemps, refreshes=refreshes)
 	await state.set_state(CaptchaStates.WAITING_CAPTCHA)
 
 
@@ -97,15 +113,25 @@ async def refresh_captcha_handler(callback: types.CallbackQuery, services: Servi
 	"""Обновление капчи по запросу пользователя"""
 	user_id = callback.from_user.id
 	state_data = await state.get_data()
+	refreshes = state_data.get("refreshes", 0) + 1
+
+	markup = UserKeyboards.captcha_refresh()
+	caption = f"🔄 Капча обновлена. Доступных обновлений: {5 - refreshes}.\n\nВведите текст с изображения:"
+
+	if refreshes > 4:
+		markup = None
+		caption = "🔄 Капча обновлена. Больше не осталось обновлений.\n\nВведите текст с изображения:"
+		await state.update_data(ban=datetime.now() + timedelta(minutes=1))
 
 	# Генерируем новую капчу
 	captcha_text, image_path = await services.captcha.generate_captcha(user_id, attemps=state_data['attemps'])
 
 	# Отправляем новую капчу
 	await callback.message.edit_media(
-		media=InputMediaPhoto(media=FSInputFile(image_path), caption="🔄 Капча обновлена. Введите текст с изображения:"),
-		reply_markup=UserKeyboards.captcha_refresh()
+		media=InputMediaPhoto(media=FSInputFile(image_path), caption=caption),
+		reply_markup=markup
 	)
 	# Удаляем файл после отправки
 	await services.captcha.cleanup(image_path)
+	await state.update_data(refreshes=refreshes)
 	await callback.answer()
