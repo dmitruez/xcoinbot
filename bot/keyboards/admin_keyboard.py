@@ -221,7 +221,7 @@ class AdminKeyboards:
 	def logs_buttons(log_files):
 		builder = InlineKeyboardBuilder()
 
-		for name in log_files:
+		for name in log_files[:7]:
 			builder.button(text=name, callback_data=f'logs-{name}')
 
 		builder.adjust(1)
