@@ -1,7 +1,7 @@
 from typing import Dict, Any, Callable, Awaitable
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import Message, Update, TelegramObject
 
 
 class DataHandlerMiddleware(BaseMiddleware):
@@ -10,8 +10,8 @@ class DataHandlerMiddleware(BaseMiddleware):
 
 	async def __call__(
 			self,
-			handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
-			event: Message,
+			handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+			event: TelegramObject,
 			data: dict
 	) -> Any:
 		data.update(self.kwargs)
