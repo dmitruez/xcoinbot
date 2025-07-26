@@ -213,7 +213,7 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 	if not admin and admin.level < 2:
 		return
 
-	chat = await bot.get_chat(update.chat.id, 3)
+	chat = await bot.get_chat(update.chat.id, 10)
 	# Проверяем, что бота именно добавили (не удалили или другие изменения)
 	channel = Channel(
 		channel_id=update.chat.id,
