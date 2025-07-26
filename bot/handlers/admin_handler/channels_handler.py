@@ -1,5 +1,8 @@
+import asyncio
+
 from aiogram import Router, types, F, Bot
 from aiogram.enums import ChatType
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION, LEAVE_TRANSITION, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ChatMemberUpdated
@@ -210,10 +213,18 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 
 	# Проверяем, что бота добавил именно администратор бота
 	admin = await services.admin.get_admin(update.from_user.id)
-	if not admin and admin.level < 2:
+
+	if not admin:
+		return
+	if admin.level < 2:
 		return
 
-	chat = await bot.get_chat(update.chat.id, 10)
+	try:
+		chat = await bot.get_chat(update.chat.id, 10)
+	except TelegramForbiddenError:
+		await asyncio.sleep(1)
+		chat = await bot.get_chat(update.chat.id, 10)
+
 	# Проверяем, что бота именно добавили (не удалили или другие изменения)
 	channel = Channel(
 		channel_id=update.chat.id,
@@ -233,7 +244,8 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 		text=f"🤖 Вы добавили бота в канал!\n"
 			 f"Название: {channel.title}\n"
 			 f"ID: {channel.channel_id}\n"
-			 f"Пригласительная ссылка: {channel.link}"
+			 f"Пригласительная ссылка: {channel.link}",
+		reply_markup=AdminKeyboards.admin_channel()
 	)
 
 	_, admins = await services.admin.list_admins()

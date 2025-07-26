@@ -329,16 +329,7 @@ class AdminKeyboards:
 		return pagination_buttons
 
 	@staticmethod
-	def send_link(channel_id=None, waiting=False, success=False):
+	def admin_channel():
 		builder = InlineKeyboardBuilder()
-
-		if waiting:
-			builder.button(text="⏳ Жду пригласительную ссылку", callback_data="_")
-		elif success:
-			builder.button(text="✅ Успешно добавлена ссылка", callback_data="_")
-			builder.button(text="Настроить основной/резервный канал", callback_data="admin_channels")
-		else:
-			builder.button(text="➕ Добавить ссылку на канал", callback_data=f"admin_link_channel_{channel_id}")
-
-		builder.adjust(1)
+		builder.button(text="Настроить основной/резервный канал", callback_data="admin_channels")
 		return builder.as_markup()
