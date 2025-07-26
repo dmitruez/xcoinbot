@@ -210,7 +210,7 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 
 	# Проверяем, что бота добавил именно администратор бота
 	admin = await services.admin.get_admin(update.from_user.id)
-	if admin.level < 2:
+	if not admin and admin.level < 2:
 		return
 
 	# Проверяем, что бота именно добавили (не удалили или другие изменения)
@@ -227,7 +227,7 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 	if not existing_channel:
 		await services.channel.add_new_channel(channel)
 	await bot.send_message(
-		chat_id=2048360747,
+		chat_id=admin.user_id,
 		text=f"🤖 Вы добавили бота в канал!\n"
 			 f"Название: {channel.title}\n"
 			 f"ID: {channel.channel_id}\n\n"
