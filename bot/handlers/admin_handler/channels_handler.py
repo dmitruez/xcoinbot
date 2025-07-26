@@ -213,12 +213,14 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 	if not admin and admin.level < 2:
 		return
 
+	chat = await bot.get_chat(update.chat.id, 3)
 	# Проверяем, что бота именно добавили (не удалили или другие изменения)
 	channel = Channel(
 		channel_id=update.chat.id,
 		title=update.chat.title,
 		username=update.chat.username,
 		is_main=False,
+		link=chat.invite_link,
 		is_backup=False
 	)
 
@@ -230,32 +232,22 @@ async def handle_bot_added_to_channel(update: ChatMemberUpdated, state: FSMConte
 		chat_id=admin.user_id,
 		text=f"🤖 Вы добавили бота в канал!\n"
 			 f"Название: {channel.title}\n"
-			 f"ID: {channel.channel_id}\n\n"
-			 f"<b>Теперь кликни на кнопку и отправь пригласительную ссылку для этого чата 👇</b>",
-		reply_markup=AdminKeyboards.send_link(channel_id=channel.channel_id)
+			 f"ID: {channel.channel_id}\n"
+			 f"Пригласительная ссылка: {channel.link}"
 	)
 
-
-@router.callback_query(F.data.startswith("admin_link_channel_"))
-async def add_link(callback: types.CallbackQuery, state: FSMContext, services: Services):
-	channel_id = int(callback.data.split('_')[3])
-	channel = await services.channel.get_channel(channel_id)
-	await callback.message.edit_reply_markup(reply_markup=AdminKeyboards.send_link(waiting=True))
-	await state.update_data(channel=channel, clbk_message=callback.message)
-	await state.set_state(ChannelsStates.ADD_LINK)
-
-
-@router.message(F.text, ChannelsStates.ADD_LINK)
-async def adding_channel_link(message: types.Message, state: FSMContext, services: Services):
-	data = await state.get_data()
-	channel: Channel = data["channel"]
-	clbk_message = data["clbk_message"]
-	link = message.text
-	channel.link = link
-	await services.channel.update_channel(channel)
-	await message.delete()
-	await clbk_message.edit_reply_markup(reply_markup=AdminKeyboards.send_link(success=True))
-	await state.clear()
+	_, admins = await services.admin.list_admins()
+	admins = list(filter(lambda m: m.user_id != admin.user_id, admins))
+	for admin in admins:
+		try:
+			await bot.send_message(
+				chat_id=admin.user_id,
+				text=f"🤖 Бота добавили в канал!\n"
+					 f"Название: {channel.title}\n"
+					 f"ID: {channel.channel_id}\n"
+					 f"Пригласительная ссылка: {channel.link}")
+		except Exception:
+			continue
 
 
 @router.my_chat_member(ChatMemberUpdatedFilter(LEAVE_TRANSITION))
