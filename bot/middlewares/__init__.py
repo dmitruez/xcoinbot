@@ -2,7 +2,7 @@ from aiogram import Dispatcher
 
 from .admin_middleware import AdminMiddleware, AdminCallbackMiddleware
 from .data_handler_middleware import DataHandlerMiddleware
-from .logger_middleware import LoggerMiddleware
+from .logger_handler import LoggerMiddleware
 from .subscription_middleware import SubscriptionMiddleware
 
 

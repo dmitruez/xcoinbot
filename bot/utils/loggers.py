@@ -23,7 +23,7 @@ class DailyFileHandler(logging.Handler):
 		"""Создает FileHandler для текущей даты"""
 		file_handler = logging.FileHandler(self._get_filename(), encoding='utf-8')
 		formatter = logging.Formatter(
-			'%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)-84s | %(filename)s:%(lineno)s',
+			'%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)-101s | %(filename)s:%(lineno)s',
 			datefmt='%Y-%m-%d %H:%M:%S'
 		)
 		file_handler.setFormatter(formatter)
@@ -53,7 +53,7 @@ class BotLogger:
 		if self.logger.handlers:
 			return
 		formatter = logging.Formatter(
-			'%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)-84s | %(filename)s:%(lineno)s',
+			'%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)-101s | %(filename)s:%(lineno)s',
 			datefmt='%Y-%m-%d %H:%M:%S'
 		)
 
