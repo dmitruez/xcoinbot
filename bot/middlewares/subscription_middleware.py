@@ -40,8 +40,7 @@ class SubscriptionMiddleware(BaseMiddleware):
 			backup_channel = await self.services.channel.get_backup_channel()
 			if backup_channel:
 				await event.answer(
-					"⚠ Для использования бота необходимо подписаться на резервный канал:\n"
-					f"@{backup_channel.username}" if backup_channel.username else
+					"⚠ Для использования бота необходимо подписаться на резервный канал:\n" 
 					f"Ссылка: {backup_channel.link}"
 				)
 			else:
