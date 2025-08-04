@@ -81,7 +81,7 @@ class AdminKeyboards:
 		kb_builder.button(text="🖼 Медиа", callback_data="welcome_edit_media")
 		kb_builder.button(text="🔘 Кнопки", callback_data="welcome_manage_buttons")
 		kb_builder.button(text="👀 Предпросмотр", callback_data="welcome_preview")
-		kb_builder.button(text="◀️ Назад", callback_data="admin_menu")
+		kb_builder.button(text="◀️ Назад", callback_data="admin_main")
 		kb_builder.adjust(2, 2, 1)
 		return kb_builder.as_markup()
 
