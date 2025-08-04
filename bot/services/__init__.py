@@ -6,6 +6,7 @@ from .channel_service import ChannelService
 from .notifier_service import NotificationService
 from .subscriber_service import SubscriptionService
 from .user_service import UserService
+from .welcome_service import WelcomeService
 from ..repositories import Repositories
 
 
@@ -19,6 +20,7 @@ class Services:
 		self.subscriber: SubscriptionService = SubscriptionService(bot, repos.user, repos.channel)
 		self.user: UserService = UserService(repos.user, admin_repo=repos.admin)
 		self.admin: AdminService = AdminService(repos.admin, repos.user, repos.channel)
+		self.welcome: WelcomeService = WelcomeService(bot, repos)
 
 
 def setup_services(bot: Bot, repos: Repositories) -> Services:

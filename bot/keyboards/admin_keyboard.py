@@ -17,7 +17,8 @@ class AdminKeyboards:
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
 			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users"),
-			InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification")
+			InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notification"),
+			InlineKeyboardButton(text="📝 Редактирование приветственного сообщения", callback_data="admin_welcome")
 		)
 		adjust.extend([2, 1])
 
@@ -71,6 +72,18 @@ class AdminKeyboards:
 			width=1
 		)
 		return builder.as_markup()
+	
+	
+	@staticmethod
+	def admin_welcome():
+		kb_builder = InlineKeyboardBuilder()
+		kb_builder.button(text="✏️ Текст", callback_data="welcome_edit_text")
+		kb_builder.button(text="🖼 Медиа", callback_data="welcome_edit_media")
+		kb_builder.button(text="🔘 Кнопки", callback_data="welcome_manage_buttons")
+		kb_builder.button(text="👀 Предпросмотр", callback_data="welcome_preview")
+		kb_builder.button(text="◀️ Назад", callback_data="admin_menu")
+		kb_builder.adjust(2, 2, 1)
+		return kb_builder.as_markup()
 
 	@staticmethod
 	def cancel_search():

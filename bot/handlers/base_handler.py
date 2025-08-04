@@ -29,17 +29,16 @@ async def start_command(message: types.Message, services: Services, state: FSMCo
 
 	# Если капча уже пройдена
 	if user.captcha_passed:
-		# Получаем основной канал
+		# # Получаем основной канал
 		channel = await services.channel.get_main_channel()
-
+		#
 		if channel:
-			await message.answer(
-				f"👋 Добро пожаловать обратно!\n"
-				f"Основной канал: {channel.link}"
-			)
+			await services.welcome.send_welcome(user_id, channel)
 		return
 
 	await send_captcha(message, state, services)
 
 
 
+
+# @router.message(Command(''))

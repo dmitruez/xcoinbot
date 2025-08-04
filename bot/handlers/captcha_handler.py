@@ -70,14 +70,12 @@ async def check_captcha(message: types.Message, services: Services, state: FSMCo
 		# Проверяем подписку на резервный канал
 		is_subscribed = await services.channel.check_subscription(message.from_user.id)
 		if is_subscribed:
-			# Получаем основной канал
+			# # Получаем основной канал
 			channel = await services.channel.get_main_channel()
 			await captcha_message.delete()
 			if channel:
-				await message.answer(
-					f"✅ Капча успешно пройдена!\n"
-					f"Добро пожаловать! Основной канал: {channel.link}"
-				)
+				await services.welcome.send_welcome(user_id, channel)
+			
 			else:
 				await message.answer("✅ Капча успешно пройдена! Добро пожаловать!")
 		else:

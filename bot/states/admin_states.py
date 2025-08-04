@@ -22,9 +22,17 @@ class UserStates(StatesGroup):
 	WAITING_ID = State()
 
 
-
 class ChannelsStates(StatesGroup):
 	CHANNELS = State()
 	EDIT_MAIN_CHANNEL = State()
 	EDIT_BACKUP_CHANNEL = State()
 	ADD_LINK = State()
+
+
+class WelcomeStates(StatesGroup):
+	EDIT_TEXT = State()
+	UPLOAD_MEDIA = State()
+	SELECT_BUTTON_TYPE = State()
+	WAITING_BUTTON_TEXT = State()
+	WAITING_BUTTON_URL = State()
+	WAITING_BUTTON_CONTENT = State()
