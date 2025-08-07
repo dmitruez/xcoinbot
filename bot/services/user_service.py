@@ -1,3 +1,6 @@
+import csv
+from datetime import datetime
+from io import StringIO
 from typing import List, Optional, Dict, Tuple
 
 from ..models import User
@@ -129,3 +132,84 @@ class UserService:
 			return await self.user_repo.get_all()
 		except Exception as e:
 			logger.exception(f"Error getting all users: {e}")
+	
+	async def get_users_file(self, format_type: str) -> Tuple[str, str, str]:
+		"""
+		Получение списка пользователей в выбранном формате
+		Возвращает: (content, filename, caption)
+		"""
+		try:
+			users = await self.user_repo.get_all()
+			total_users = len(users)
+			active_users = sum(1 for u in users if u.is_active)
+			
+			header_info = (
+				f"# Всего пользователей: {total_users}\n"
+				f"# Активных: {active_users}\n"
+				f"# Неактивных: {total_users - active_users}\n"
+				f"# Дата генерации: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+			)
+			
+			if format_type == "txt":
+				return self._format_txt(users, header_info)
+			elif format_type == "csv":
+				return self._format_csv(users, header_info)
+			else:
+				raise ValueError("Неизвестный формат")
+		
+		except Exception as e:
+			logger.error(f"Ошибка при формировании списка пользователей: {e}")
+			return "❌ Не удалось сформировать список", "error.txt", "Ошибка"
+	
+	def _format_txt(self, users: List[User], header: str) -> Tuple[str, str, str]:
+		"""Форматирование в красивый TXT"""
+		result = [header, "\n" + "=" * 50 + "\n"]
+		
+		for i, user in enumerate(users, 1):
+			user_info = (
+					f"👤 Пользователь #{i}\n"
+					f"🆔 ID: {user.user_id}\n"
+					f"👤 Имя: {user.full_name}\n"
+					f"📱 Username: @{user.username if user.username else 'N/A'}\n"
+					f"📅 Дата регистрации: {user.join_date.strftime('%d.%m.%Y %H:%M')}\n"
+					f"🔒 Статус: {'🟢 Активен' if user.is_active else '🔴 Заблокирован'}\n"
+					f"🔔 Уведомления: {'🟢 Вкл' if user.should_notify else '🔴 Выкл'}\n\n"
+					+ "⎯" * 30
+			)
+			result.append(user_info)
+		
+		filename = f"users_{datetime.now().strftime('%Y%m%d_%H%M')}.txt"
+		caption = "📋 Список пользователей (TXT)"
+		return "\n\n".join(result), filename, caption
+	
+	def _format_csv(self, users: List[User], header: str) -> Tuple[str, str, str]:
+		"""Форматирование в CSV"""
+		# Создаем CSV в памяти
+		output = StringIO()
+		writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+		
+		# Заголовки CSV
+		writer.writerow([
+			"ID", "Full Name", "Username", "Registration Date",
+			"Is Active", "Notifications"
+		])
+		
+		# Данные пользователей
+		for user in users:
+			writer.writerow([
+				user.user_id,
+				user.full_name,
+				f"@{user.username}" if user.username else "",
+				user.join_date.strftime('%Y-%m-%d %H:%M'),
+				"Yes" if user.is_active else "No",
+				"Yes" if user.should_notify else "No"
+			])
+		
+		# Добавляем header как комментарий
+		csv_data = output.getvalue().replace('\r\n', '\n').replace('\r', '\n')
+		csv_content = f"{header}\n{csv_data}"
+		
+		filename = f"users_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+		caption = "📊 Список пользователей (CSV)"
+		return csv_content, filename, caption
+	

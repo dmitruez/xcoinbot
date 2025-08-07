@@ -39,8 +39,8 @@ class UserRepository(BaseRepository[User]):
 	async def get_by_username(self, query: str, limit: int = 12) -> List[User]:
 		"""Поиск пользователей по username (без @)"""
 		query = query.lower().strip()
-		sql = """
-	    SELECT * FROM users 
+		sql = f"""
+	    SELECT * FROM {self.table_name}
 	    WHERE username IS NOT NULL 
 	    AND LOWER(username) LIKE $1 || '%'
 	    LIMIT $2
@@ -51,8 +51,8 @@ class UserRepository(BaseRepository[User]):
 	async def get_by_nickname(self, query: str, limit: int = 12) -> List[User]:
 		"""Поиск пользователей по nickname (имя + фамилия)"""
 		query = query.lower().strip()
-		sql = """
-	    SELECT * FROM users 
+		sql = f"""
+	    SELECT * FROM {self.table_name}
 	    WHERE LOWER(full_name) LIKE '%' || $1 || '%'
 	    LIMIT $2
 	    """
@@ -109,7 +109,7 @@ class UserRepository(BaseRepository[User]):
 		"""Получение пользователей, которым нужно отправлять уведомления"""
 		query = f"""
         SELECT * FROM {self.table_name} 
-        WHERE is_active = TRUE AND is_banned = FALSE AND should_notify = TRUE
+        WHERE is_active = TRUE AND is_banned = FALSE AND should_notify = TRUE AND captcha_passed = TRUE
         """
 		records = await self._fetch_all(query)
 		return await self._records_to_models(records)
@@ -156,7 +156,7 @@ class UserRepository(BaseRepository[User]):
 		async with self.pool.acquire() as conn:
 			return await conn.fetchval(query)
 
-	async def count_active_users(self) -> List[User]:
+	async def count_active_users(self) -> int:
 		"""Получение активных пользователей"""
 		query = f"""
 		SELECT COUNT(*) FROM {self.table_name} 
@@ -194,3 +194,26 @@ class UserRepository(BaseRepository[User]):
 				f"SELECT COUNT(*) FROM {self.table_name} WHERE is_banned = TRUE AND banned_when BETWEEN $1 AND $2",
 				start_date, end_date
 			)
+	
+	async def get_all_users_formatted(self) -> str:
+		"""Получение всех пользователей в формате для TXT файла"""
+		query = f"SELECT * FROM {self.table_name}"
+		records = await self._fetch_all(query)
+		
+		if not records:
+			return ""
+		
+		result = []
+		for record in records:
+			user = await self._record_to_model(record)
+			result.append(
+				f"ID: {user.user_id}\n"
+				f"Username: @{user.username if user.username else 'нет'}\n"
+				f"Имя: {user.full_name}\n"
+				f"Дата регистрации: {user.join_date.strftime('%d.%m.%Y %H:%M')}\n"
+				f"Активен: {'🟢 Да' if user.is_active else '🔴 Нет'}\n"
+				f"Уведомления: {'🟢 Включены' if user.should_notify else '🔴 Выключены'}\n"
+				"----------------------------------------"
+			)
+		
+		return "\n\n".join(result)

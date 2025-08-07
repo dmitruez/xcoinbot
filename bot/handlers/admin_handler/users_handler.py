@@ -1,3 +1,5 @@
+import os
+
 from aiogram import Router, types, F, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandObject
@@ -8,6 +10,7 @@ from ...models import Admin
 from ...services import Services
 from ...states.admin_states import UserStates
 from ...utils.commands import set_commands_to_user
+from ...utils.loggers import handlers as logger
 
 
 router = Router(name=__name__)
@@ -212,62 +215,66 @@ async def handle_user_id_input(message: types.Message, services: Services):
 	)
 
 
-# ДОРАБОТАТЬ ЕСЛИ ПОНАДОБИТСЯ
+@router.message(Command('users_list'))
 @router.callback_query(F.data == "admin_users_list")
-async def get_users_list(callback: types.CallbackQuery, state: FSMContext, services: Services):
+async def get_users_list(callback: types.CallbackQuery | types.Message, state: FSMContext, services: Services):
 	"""Показ всех пользователей"""
-	await callback.answer("❌ Пока в разработке ❌")
-# 	users = await services.user.users_list()
-#
-# 	if not users:
-# 		await callback.answer("ℹ Нет доступных пользователей", show_alert=True)
-# 		return
-#
-# 	paginator = Paginator(users, per_page=6)
-# 	page = paginator.get_page(1)
-#
-# 	buttons = [
-# 		(f" {us.full_name if us.full_name else }", f"select_{us.user_id}")
-# 		for us in page.items
-# 	]
-#
-# 	await callback.message.edit_text(
-# 		"🟢 <b>Выберите пользователя:</b> 🟢",
-#
-# 		reply_markup=AdminKeyboards().users_list(
-# 			users=buttons,
-# 			current_page=page.page,
-# 			total_pages=page.total_pages,
-# 			prefix='user'
-# 		)
-# 	)
-# 	await state.set_state(UserStates.CHOOSE_USER)
-# 	await callback.answer()
-#
-#
-# @router.callback_query(F.data.startswith("select_"))
-# async def get_user_profile(callback: types.CallbackQuery, services: Services):
-# 	"""Просмотр профиля пользователя"""
-# 	user_id = int(callback.data.split("_")[1])
-# 	user = await services.user.get_user_by_id(user_id)
-#
-# 	if not user:
-# 		await callback.answer("❌ Пользователь не найден", show_alert=True)
-# 		return
-#
-# 	user_link = f"<a href='tg://user?id={user_id}'>{user.full_name}</a>\n"
-# 	await callback.message.answer(
-# 		f"👤 Пользователь: @{user.username if user.username else user_link}\n"
-# 		f"🆔 ID: <code>{user_id}</code>\n"
-# 		f"👤 Имя: {user.full_name}\n"
-# 		f"🔒 Статус: {'🟢 Активен' if user.is_active else '🔴 Заблокирован'}\n"
-# 		f"Уведомления: {'🟢 Включены' if user.should_notify else '🔴 Выключены'}",
-#
-# 		reply_markup=AdminKeyboards.profile_menu(user)
-# 	)
+	if isinstance(callback, types.CallbackQuery):
+		message = callback.message
+		is_callback = True
+	else:
+		message = callback
+		is_callback = False
+	
+	
+	await message.answer(
+		"📋 Выберите формат для экспорта списка пользователей:",
+		reply_markup=AdminKeyboards.select_file_users()
+	)
+	
+	if is_callback:
+		await callback.answer()
 
 
-
+@router.callback_query(F.data.startswith("users_format_"))
+async def process_users_format(
+		callback: types.CallbackQuery,
+		services: Services
+):
+	"""Обработка выбора формата и отправка файла"""
+	format_type = callback.data.split("_")[2]  # txt или csv
+	
+	# Уведомление о начале формирования
+	notification = await callback.message.answer("⏳ Формируем файл...")
+	
+	# Получаем данные
+	content, filename, caption = await services.user.get_users_file(format_type)
+	
+	# Создаем временный файл
+	with open(filename, 'w', encoding='utf-8') as f:
+		f.write(content)
+	
+	# Отправляем файл
+	try:
+		await callback.message.answer_document(
+			types.FSInputFile(filename),
+			caption=caption
+		)
+	except Exception as e:
+		logger.error(f"Ошибка отправки файла: {e}")
+		await callback.message.answer("❌ Не удалось отправить файл")
+	
+	# Удаляем временный файл
+	try:
+		os.remove(filename)
+	except:
+		pass
+	
+	# Удаляем уведомление
+	await notification.delete()
+	await callback.answer()
+	
+ 
 @router.callback_query(F.data.startswith("admin_ban_"))
 async def ban_user(callback: types.CallbackQuery, services: Services, admin: Admin):
 	"""Блокировка пользователя"""
