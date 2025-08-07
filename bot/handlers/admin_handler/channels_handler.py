@@ -286,9 +286,7 @@ async def leave_channel(update: ChatMemberUpdated, services: Services):
 				await services.channel.set_main_channel(backup_channel.channel_id)
 
 				# Отправляем уведомления пользователям
-				data = await services.notification.notify_channel_change(
-					new_channel=backup_channel
-				)
+				data = await services.notification.notify_channel_change(channel=backup_channel)
 
 				for admin in super_admins:
 					try:
@@ -301,20 +299,6 @@ async def leave_channel(update: ChatMemberUpdated, services: Services):
 						)
 					except Exception:
 						continue
-
-			# Уведомляем админов
-			# for admin_id in Config.DEVELOPERS_IDS:
-			# 	try:
-			# 		await update.bot.send_message(
-			# 			admin_id,
-			# 			f"⚠️ Основной канал {channel.title} был удален!\n"
-			# 			f"Автоматически назначен новый основной канал: {backup_channel.title}\n"
-			# 			f"Уведомления отправлены {data['success']} пользователям\n"
-			# 			f"Пользователи которым не удалось отправить уведомления: {data['failures']}"
-			# 		)
-			# 	except Exception:
-			# 		continue
-
 			else:
 				# Нет резервного канала - срочное уведомление админам
 				for admin in super_admins:
@@ -328,18 +312,6 @@ async def leave_channel(update: ChatMemberUpdated, services: Services):
 						)
 					except Exception:
 						continue
-
-		# for admin_id in Config.DEVELOPERS_IDS:
-		# 	try:
-		# 		await update.bot.send_message(
-		# 			admin_id,
-		# 			f"🚨 КРИТИЧЕСКОЕ СОБЫТИЕ!\n"
-		# 			f"Основной канал {channel.title} был удален, "
-		# 			f"а резервный канал не настроен!\n"
-		# 			f"Немедленно настройте новый канал!"
-		# 		)
-		# 	except Exception:
-		# 		continue
 
 		# Удаляем информацию о канале из БД
 		await services.channel.delete_channel(channel)

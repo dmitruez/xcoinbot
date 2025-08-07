@@ -13,6 +13,9 @@ class NotificationStates(StatesGroup):
 	WAITING_BUTTON_TEXT = State()
 	WAITING_BUTTON_URL = State()
 	EDITING_BUTTON = State()
+	UPLOAD_MEDIA = State()
+	SELECT_BUTTON_TYPE = State()
+	WAITING_BUTTON_CONTENT = State()
 
 
 class UserStates(StatesGroup):
@@ -36,3 +39,13 @@ class WelcomeStates(StatesGroup):
 	WAITING_BUTTON_TEXT = State()
 	WAITING_BUTTON_URL = State()
 	WAITING_BUTTON_CONTENT = State()
+
+
+class BroadcastStates(StatesGroup):
+	WAITING_CONTENT = State()
+	SELECT_BUTTON_TYPE = State()
+	WAITING_BUTTON_TEXT = State()
+	WAITING_BUTTON_URL = State()
+	WAITING_BUTTON_CONTENT = State()
+	CONFIRM_ADD_ANOTHER = State()
+	CONFIRM_BROADCAST = State()

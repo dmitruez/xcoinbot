@@ -31,14 +31,16 @@ async def start_command(message: types.Message, services: Services, state: FSMCo
 	if user.captcha_passed:
 		# # Получаем основной канал
 		channel = await services.channel.get_main_channel()
-		#
+		text, media_type, media_id, buttons = await services.welcome.format_message(channel)
+		keyboard = await services.welcome.format_keyboard(buttons)
 		if channel:
-			await services.welcome.send_welcome(user_id, channel)
+			await services.welcome.send_message(user_id, text, media_type, media_id, keyboard)
 		return
 
 	await send_captcha(message, state, services)
 
 
 
-
-# @router.message(Command(''))
+@router.callback_query(F.data == 'delete_this_message')
+async def delete_this_message(callback: types.CallbackQuery):
+	await callback.message.delete()
