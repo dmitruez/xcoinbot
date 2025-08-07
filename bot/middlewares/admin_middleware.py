@@ -17,9 +17,11 @@ access_map = {
 	'/stats': 1,
 	'/admin': 1,
 	'/edit_notification': 1,
+	'/users_list': 1,
 	'/ban': 2,
 	'/unban': 2,
 	'/edit_channels': 2,
+	'/broadcast': 2,
 	'/logs': 3,
 	'/backup': 3
 }
