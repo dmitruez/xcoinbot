@@ -15,7 +15,8 @@ base_commands = [
 regular_admin_commands = [
 	BotCommand(command='/admin', description="Админ панель"),
 	BotCommand(command='/stats', description="Статистика пользователей"),
-	BotCommand(command='/edit_notification', description="Измненение сообщения рассылки")
+	BotCommand(command='/edit_notification', description="Измненение сообщения рассылки"),
+	BotCommand(command='/users_list', description='Получить файл с пользователями')
 ]
 
 
@@ -23,6 +24,7 @@ super_admin_commands = [
 	BotCommand(command='/ban', description="ПИШИТЕ /ban {ID} Выключить уведомления по ID"),
 	BotCommand(command='/unban', description="ПИШИТЕ /unban {ID} Включить уведомления по ID"),
 	BotCommand(command='/edit_channels', description="Назначить основной/резервный канал"),
+	BotCommand(command='/broadcast', description="Работа с рассылкой")
 
 ]
 
