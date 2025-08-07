@@ -361,7 +361,7 @@ async def preview_welcome(
 	
 	try:
 		# Отправляем заголовок предпросмотра
-		await callback.message.answer(
+		await callback.message.edit_text(
 			"👀 <b>Предпросмотр приветственного сообщения:</b>",
 			reply_markup=InlineKeyboardBuilder()
 			.button(text="◀️ Назад", callback_data="admin_welcome")
