@@ -45,10 +45,34 @@ class Captcha:
 
 
 @dataclass
-class NotificationTemplate:
+class Button:
+	id: str
+	text: str
+	button_type: str
+	value: str
+
+
+@dataclass
+class MessageTemplate:
 	"""Модель шаблона уведомления о смене канала"""
 	text: str
-	buttons: List[Tuple[str, str]]  # (text, url)
-
+	media_type: str | None
+	media_id: str | None
+	buttons: List[Button]
+	
 	def has_buttons(self) -> bool:
 		return len(self.buttons) > 0
+
+
+@dataclass
+class BroadcastMessage:
+	text: str
+	media_type: str | None
+	media_id: str | None
+	buttons: List[Button]
+	sent_at: datetime
+	sent_by: int
+	success_count: int = 0
+	error_count: int = 0
+	total_users: int = 0
+	id: int = None
