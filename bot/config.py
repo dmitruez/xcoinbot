@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta, timezone
 
 from dotenv import load_dotenv
 
@@ -17,7 +18,7 @@ class Config:
 	DB_HOST = os.getenv("DB_HOST")
 	DB_PORT = int(os.getenv("DB_PORT"))
 	
-	TIME_ZONE = int(os.getenv("TIME_ZONE"))
+	TZ = timezone(timedelta(hours=int(os.getenv("TIME_ZONE"))))
 
 	# Channels
 	# MAIN_CHANNEL_ID = int(os.getenv("MAIN_CHANNEL_ID"))
