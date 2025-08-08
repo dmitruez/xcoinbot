@@ -7,6 +7,7 @@ from ..models import User
 from ..repositories import AdminRepository
 from ..repositories.user_repository import UserRepository
 from ..utils.loggers import services as logger
+from ..utils.work_with_date import get_datetime_now
 
 
 class UserService:
@@ -147,7 +148,7 @@ class UserService:
 				f"# Всего пользователей: {total_users}\n"
 				f"# Активных: {active_users}\n"
 				f"# Неактивных: {total_users - active_users}\n"
-				f"# Дата генерации: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+				f"# Дата генерации: {get_datetime_now().strftime('%d.%m.%Y %H:%M')}"
 			)
 			
 			if format_type == "txt":
@@ -178,7 +179,7 @@ class UserService:
 			)
 			result.append(user_info)
 		
-		filename = f"users_{datetime.now().strftime('%Y%m%d_%H%M')}.txt"
+		filename = f"users_{get_datetime_now().strftime('%Y%m%d_%H%M')}.txt"
 		caption = "📋 Список пользователей (TXT)"
 		return "\n\n".join(result), filename, caption
 	
@@ -209,7 +210,7 @@ class UserService:
 		csv_data = output.getvalue().replace('\r\n', '\n').replace('\r', '\n')
 		csv_content = f"{header}\n{csv_data}"
 		
-		filename = f"users_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+		filename = f"users_{get_datetime_now().strftime('%Y%m%d_%H%M')}.csv"
 		caption = "📊 Список пользователей (CSV)"
 		return csv_content, filename, caption
 	

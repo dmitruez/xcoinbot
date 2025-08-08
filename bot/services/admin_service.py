@@ -8,6 +8,7 @@ from ..models import Admin
 from ..repositories import UserRepository, ChannelRepository
 from ..repositories.admin_repository import AdminRepository
 from ..utils.loggers import services as logger
+from ..utils.work_with_date import get_datetime_now
 
 
 class AdminService:
@@ -103,7 +104,7 @@ class AdminService:
 	async def get_daily_stats(self, days: int = 7) -> List[Dict[str, any]]:
 		"""Получение статистики по дням"""
 		stats = []
-		today = datetime.now().date()
+		today = get_datetime_now().date()
 
 		for i in range(days, 0, -1):
 			date = today - timedelta(days=i)

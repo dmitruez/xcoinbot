@@ -4,6 +4,7 @@ from typing import List, Tuple, Optional, Dict
 from ..repositories import AdminRepository
 from ..repositories.broadcast_repository import BroadcastRepository
 from ..models import BroadcastMessage, Button
+from ..utils.work_with_date import get_datetime_now
 
 
 class BroadcastService:
@@ -26,7 +27,7 @@ class BroadcastService:
 			media_type=media_type,
 			media_id=media_id,
 			buttons=buttons,
-			sent_at=datetime.now(),
+			sent_at=get_datetime_now(),
 			sent_by=sent_by,
 			total_users=total_users
 		)

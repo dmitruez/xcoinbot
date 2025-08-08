@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Tuple
+from .utils.work_with_date import get_datetime_now
 
 
 @dataclass
@@ -14,7 +15,7 @@ class User:
 	is_banned: bool = False
 	captcha_passed: bool = False
 	should_notify: bool = True  # Получать уведомления о смене канала
-	join_date: datetime = datetime.now()
+	join_date: datetime = get_datetime_now()
 	banned_when: datetime = None
 
 
@@ -41,7 +42,7 @@ class Captcha:
 	user_id: int
 	text: str
 	attempts: int = 0  # При трех не правильных попытках банить вход на 5 мин
-	created_at: datetime = datetime.now()
+	created_at: datetime = get_datetime_now()
 
 
 @dataclass

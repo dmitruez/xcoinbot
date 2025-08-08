@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from .work_with_date import get_datetime_now
 
 
 class DailyFileHandler(logging.Handler):
@@ -12,12 +13,12 @@ class DailyFileHandler(logging.Handler):
 		super().__init__()
 		self.log_dir = Path(log_dir)
 		self.log_dir.mkdir(exist_ok=True, parents=True)
-		self.current_date = datetime.now().date()
+		self.current_date = get_datetime_now().date()
 		self.current_handler = self._create_handler()
 
 	def _get_filename(self):
 		"""Генерирует имя файла на основе текущей даты"""
-		return self.log_dir / f"{datetime.now().strftime('%Y_%m_%d')}.log"
+		return self.log_dir / f"{get_datetime_now().strftime('%Y_%m_%d')}.log"
 
 	def _create_handler(self):
 		"""Создает FileHandler для текущей даты"""
@@ -31,7 +32,7 @@ class DailyFileHandler(logging.Handler):
 
 	def emit(self, record):
 		"""Обрабатывает запись лога, проверяя смену даты"""
-		today = datetime.now().date()
+		today = get_datetime_now().date()
 		if today != self.current_date:
 			# Дата сменилась, создаем новый обработчик
 			self.current_date = today

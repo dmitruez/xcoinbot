@@ -8,6 +8,7 @@ from aiogram.types import Message, FSInputFile, InputMediaPhoto
 from ..keyboards.user_keyboard import UserKeyboards
 from ..services import Services
 from ..states.base_states import CaptchaStates
+from ..utils.work_with_date import get_datetime_now
 
 
 router = Router(name=__name__)
@@ -15,7 +16,7 @@ router = Router(name=__name__)
 
 async def send_captcha(message: Message, state: FSMContext, services: Services):
 	state_data = await state.get_data()
-	now = datetime.now()
+	now = get_datetime_now()
 	attemps = state_data.get("attemps", 0)
 	refreshes = state_data.get("refreshes", 0)
 
@@ -119,7 +120,7 @@ async def refresh_captcha_handler(callback: types.CallbackQuery, services: Servi
 	if refreshes > 4:
 		markup = None
 		caption = "🔄 Капча обновлена. Больше не осталось обновлений.\n\nВведите текст с изображения:"
-		await state.update_data(ban=datetime.now() + timedelta(minutes=1))
+		await state.update_data(ban=get_datetime_now() + timedelta(minutes=1))
 
 	# Генерируем новую капчу
 	captcha_text, image_path = await services.captcha.generate_captcha(user_id, attemps=state_data['attemps'])
