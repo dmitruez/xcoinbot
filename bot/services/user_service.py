@@ -12,23 +12,23 @@ from ..utils.work_with_date import get_datetime_now
 
 class UserService:
 	"""Сервис для работы с пользователями"""
-
+	
 	def __init__(self, user_repo: UserRepository, admin_repo: AdminRepository):
 		self.user_repo = user_repo
 		self.admin_repo = admin_repo
-
-	async def get_user_by_id(self, user_id: int=None) -> Optional[User]:
+	
+	async def get_user_by_id(self, user_id: int = None) -> Optional[User]:
 		"""Получение пользователя по ID"""
 		try:
 			return await self.user_repo.get_by_id(user_id)
 		except Exception as e:
 			logger.error(f"Error getting user {user_id}: {e}")
 			return None
-
+	
 	async def search_users(self, search_type: str, query: str) -> List[User]:
 		"""Поиск пользователей по типу поиска"""
 		query = query.strip()
-
+		
 		if search_type == "username":
 			return await self.user_repo.get_by_username(query)
 		elif search_type == "nickname":
@@ -38,16 +38,16 @@ class UserService:
 				user = await self.user_repo.get_by_id(int(query))
 				return [user] if user else []
 		return []
-
+	
 	async def format_user_info(self, user: User) -> Tuple[str, bool, int]:
 		"""Форматирование информации о пользователе"""
 		admin = await self.admin_repo.get(user.user_id)
-
+		
 		if admin:
 			admin_info = f"\n👑 Админ: Да (Уровень: {admin.level})"
 		else:
 			admin_info = "\n👑 Админ: Нет"
-
+		
 		return (
 			f"👤 ID: <code>{user.user_id}</code>\n"
 			f"🆔 Username: @{user.username if user.username else 'нет'}\n"
@@ -57,10 +57,10 @@ class UserService:
 			f"Уведомления: {'🟢 Включены' if user.should_notify else '🔴 Выключены'}\n"
 			f"{admin_info}"
 		), True if admin else False, admin.level if admin else None
-
+	
 	async def create_user(self, user) -> User:
 		"""Создание нового пользователя"""
-
+		
 		try:
 			await self.user_repo.create(user)
 			logger.info(f"Created new user: {user.user_id}")
@@ -68,7 +68,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error creating user {user.user_id}: {e}")
 			raise
-
+	
 	async def ban_user(self, user_id: int) -> bool:
 		"""Блокировка пользователя"""
 		try:
@@ -78,7 +78,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error banning user {user_id}: {e}")
 			return False
-
+	
 	async def unban_user(self, user_id: int) -> bool:
 		"""Разблокировка пользователя"""
 		try:
@@ -88,7 +88,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error unbanning user {user_id}: {e}")
 			return False
-
+	
 	async def mark_captcha_passed(self, user_id: int) -> bool:
 		"""Отметка прохождения капчи"""
 		try:
@@ -97,7 +97,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error marking captcha passed for {user_id}: {e}")
 			return False
-
+	
 	async def set_notification_status(self, user_id: int, status: bool) -> bool:
 		"""Установка статуса уведомлений"""
 		try:
@@ -106,7 +106,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error setting notification status for {user_id}: {e}")
 			return False
-
+	
 	async def get_users_for_notification(self) -> List[User]:
 		"""Получение пользователей для уведомлений"""
 		try:
@@ -114,7 +114,7 @@ class UserService:
 		except Exception as e:
 			logger.error(f"Error getting users for notification: {e}")
 			return []
-
+	
 	async def count_users(self) -> Dict[str, int]:
 		"""Получение статистики пользователей"""
 		try:
@@ -127,7 +127,7 @@ class UserService:
 		except Exception as e:
 			logger.exception(f"Error counting users: {e}")
 		return {'total': 0, 'active': 0}
-
+	
 	async def users_list(self) -> List[User]:
 		try:
 			return await self.user_repo.get_all()
@@ -213,4 +213,3 @@ class UserService:
 		filename = f"users_{get_datetime_now().strftime('%Y%m%d_%H%M')}.csv"
 		caption = "📊 Список пользователей (CSV)"
 		return csv_content, filename, caption
-	

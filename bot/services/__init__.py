@@ -11,6 +11,7 @@ from .subscriber_service import SubscriptionService
 from .user_service import UserService
 from .welcome_service import WelcomeService
 from ..repositories import Repositories
+from .chat_service import ChatService
 
 
 class Services:

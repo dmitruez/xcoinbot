@@ -7,7 +7,7 @@ from ..services import Services
 router = Router(name=__name__)
 
 
-@router.message(StateFilter(None), F.text)
+@router.message(StateFilter(None), F.text, F.text != "/admin")
 async def forward_user_message(message: types.Message, services: Services):
 	if message.text.startswith('/'):
 		return
