@@ -53,18 +53,19 @@ class AdminKeyboards:
 		)
 		builder.adjust(1)
 		return builder.as_markup()
-	
+
 	@staticmethod
 	def messages_menu():
 		builder = InlineKeyboardBuilder()
 		builder.add(
 			InlineKeyboardButton(text="📥 Непрочитанные", callback_data="admin_messages_unread"),
 			InlineKeyboardButton(text="🕘 Последние диалоги", callback_data="admin_messages_recent"),
+			InlineKeyboardButton(text="✉️ Написать пользователю", callback_data="admin_messages_direct"),
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
 		)
 		builder.adjust(1)
 		return builder.as_markup()
-	
+
 	@staticmethod
 	def dialogs_list(dialogs: List[ChatDialog], prefix: str) -> InlineKeyboardMarkup:
 		builder = InlineKeyboardBuilder()
@@ -77,7 +78,7 @@ class AdminKeyboards:
 		builder.button(text="◀ Назад", callback_data="admin_messages")
 		builder.adjust(1)
 		return builder.as_markup()
-	
+
 	@staticmethod
 	def chat_dialog_controls(user_id: int) -> InlineKeyboardMarkup:
 		builder = InlineKeyboardBuilder()
@@ -86,20 +87,28 @@ class AdminKeyboards:
 		builder.button(text="◀ Назад", callback_data="admin_messages")
 		builder.adjust(2, 1)
 		return builder.as_markup()
-	
+
 	@staticmethod
 	def chat_notification(user_id: int) -> InlineKeyboardMarkup:
 		builder = InlineKeyboardBuilder()
 		builder.button(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user_id}")
 		builder.adjust(1)
 		return builder.as_markup()
-	
+
 	@staticmethod
 	def chat_reply_cancel(user_id: int) -> InlineKeyboardMarkup:
 		builder = InlineKeyboardBuilder()
 		builder.button(text="◀ Назад", callback_data=f"admin_messages_open_{user_id}")
 		builder.adjust(1)
 		return builder.as_markup()
+
+	@staticmethod
+	def chat_direct_cancel() -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		builder.button(text="◀ Назад", callback_data="admin_messages_cancel")
+		builder.adjust(1)
+		return builder.as_markup()
+
 	
 	@staticmethod
 	def select_file_users():
@@ -207,6 +216,10 @@ class AdminKeyboards:
 						))
 				adjust.extend([1, 2])
 		
+		builder.add(
+			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
+		)
+		adjust.append(1)
 		builder.add(
 			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
 		)

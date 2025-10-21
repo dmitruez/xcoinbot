@@ -27,6 +27,7 @@ class UserStates(StatesGroup):
 
 class ChatStates(StatesGroup):
 	LIST = State()
+	WAITING_USER = State()
 	WAITING_REPLY = State()
 
 

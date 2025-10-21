@@ -113,6 +113,67 @@ async def open_dialog(callback: types.CallbackQuery, state: FSMContext, services
 	await callback.answer()
 
 
+@router.callback_query(F.data == "admin_messages_direct")
+async def start_direct_message(callback: types.CallbackQuery, state: FSMContext):
+	await state.set_state(ChatStates.WAITING_USER)
+	await state.update_data(chat_user_id=None)
+	await callback.message.edit_text(
+		"✉️ <b>Отправить сообщение пользователю</b>\n\n"
+		"Введите ID или username получателя (например, <code>123456</code> или <code>@username</code>).",
+		reply_markup=AdminKeyboards.chat_direct_cancel()
+	)
+	await callback.answer()
+
+
+@router.callback_query(F.data == "admin_messages_cancel")
+async def cancel_direct_message(callback: types.CallbackQuery, state: FSMContext):
+	await state.set_state(ChatStates.LIST)
+	await state.update_data(chat_user_id=None)
+	await callback.message.edit_text(MESSAGES_MENU_TEXT, reply_markup=AdminKeyboards.messages_menu())
+	await callback.answer()
+
+
+@router.message(ChatStates.WAITING_USER)
+async def select_direct_user(message: types.Message, state: FSMContext, services: Services):
+	query = (message.text or '').strip()
+	if not query:
+		await message.answer("❌ Укажите ID или username пользователя")
+		return
+
+	user = None
+	if query.isdigit():
+		user = await services.user.get_user_by_id(int(query))
+	else:
+		username = query.lower().lstrip('@')
+		if username:
+			candidates = await services.user.search_users('username', username)
+			for candidate in candidates:
+				if candidate and candidate.username and candidate.username.lower() == username:
+					user = candidate
+					break
+			if not user and candidates:
+				user = candidates[0]
+
+	if not user:
+		await message.answer("❌ Пользователь не найден. Проверьте данные и попробуйте ещё раз.")
+		return
+
+	await services.chat.mark_read(user.user_id)
+	await state.update_data(chat_user_id=user.user_id)
+	await state.set_state(ChatStates.WAITING_REPLY)
+
+	dialog_text = await _format_history(services, user.user_id)
+	await message.answer(
+		dialog_text,
+		reply_markup=AdminKeyboards.chat_dialog_controls(user.user_id)
+	)
+	await message.answer(
+		"✏️ <b>Введите сообщение для пользователя</b>\n\n"
+		f"Получатель: {html.escape(user.full_name)} (ID: <code>{user.user_id}</code>)",
+		reply_markup=AdminKeyboards.chat_reply_cancel(user.user_id)
+	)
+
+
 @router.callback_query(F.data.startswith("admin_messages_reply_"))
 async def start_reply(callback: types.CallbackQuery, state: FSMContext, services: Services):
 	try:

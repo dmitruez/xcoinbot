@@ -4,6 +4,7 @@ from .admin_service import AdminService
 from .broadcast_service import BroadcastService
 from .captcha_service import CaptchaService
 from .channel_service import ChannelService
+from .chat_service import ChatService
 from .message_service import MessageService
 from .notifier_service import NotificationService
 from .subscriber_service import SubscriptionService
