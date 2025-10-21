@@ -66,13 +66,13 @@ async def _format_history(services: Services, user_id: int) -> str:
 	return "\n".join(lines)
 
 
-MESSAGES_MENU_TEXT = "💬 <b>Диалоги с пользователями</b>\n\nВыберите раздел:"
-
-
 @router.callback_query(F.data == "admin_messages")
 async def open_messages_menu(callback: types.CallbackQuery, state: FSMContext):
 	await state.set_state(ChatStates.LIST)
-	await callback.message.edit_text(MESSAGES_MENU_TEXT, reply_markup=AdminKeyboards.messages_menu())
+	await callback.message.edit_text(
+		"💬 <b>Диалоги с пользователями</b>\n\nВыберите раздел:",
+		reply_markup=AdminKeyboards.messages_menu()
+	)
 	await callback.answer()
 
 

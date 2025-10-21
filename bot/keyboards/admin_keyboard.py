@@ -12,7 +12,7 @@ class AdminKeyboards:
 		"""Главное меню админ-панели в зависимости от уровня"""
 		builder = InlineKeyboardBuilder()
 		adjust = []
-
+		
 		# Кнопки для всех админов
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
@@ -28,10 +28,10 @@ class AdminKeyboards:
 			builder.add(
 				InlineKeyboardButton(text="📢 Управление каналами", callback_data="admin_channels"),
 				InlineKeyboardButton(text="📨 Рассылка", callback_data="admin_broadcast")
-				
+			
 			)
 			adjust.extend([1, 1])
-
+		
 		# Кнопки для developer (уровень 3)
 		if admin_level >= 3:
 			builder.add(
@@ -39,16 +39,16 @@ class AdminKeyboards:
 				# InlineKeyboardButton(text="💾 Бэкап", callback_data="admin_backup")
 			)
 			adjust.append(1)
-
+		
 		builder.adjust(*adjust)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def users_menu():
 		builder = InlineKeyboardBuilder()
 		builder.add(
 			InlineKeyboardButton(text="🔍 Поиск пользователя", callback_data="admin_search_user"),
-			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"), # НЕ РЕАЛИЗОВАНО
+			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"),  # НЕ РЕАЛИЗОВАНО
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
 		)
 		builder.adjust(1)
@@ -117,7 +117,7 @@ class AdminKeyboards:
 		kb.button(text="📊 Формальный CSV", callback_data="users_format_csv")
 		kb.adjust(1)
 		return kb.as_markup()
-
+	
 	@staticmethod
 	def search_menu():
 		"""Меню поиска пользователей"""
@@ -140,7 +140,6 @@ class AdminKeyboards:
 		)
 		return builder.as_markup()
 	
-	
 	@staticmethod
 	def admin_welcome():
 		kb_builder = InlineKeyboardBuilder()
@@ -151,7 +150,7 @@ class AdminKeyboards:
 		kb_builder.button(text="◀️ Назад", callback_data="admin_main")
 		kb_builder.adjust(2, 2, 1)
 		return kb_builder.as_markup()
-
+	
 	@staticmethod
 	def cancel_search():
 		"""Клавиатура отмены поиска"""
@@ -161,7 +160,7 @@ class AdminKeyboards:
 			callback_data="admin_users"
 		))
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def back_to_search():
 		"""Кнопка возврата к поиску"""
@@ -171,25 +170,24 @@ class AdminKeyboards:
 			callback_data="admin_search_menu"
 		))
 		return builder.as_markup()
-
-
+	
 	@staticmethod
-	def profile_menu(user: User, is_admin: bool=False, admin_level: int=None, access_level: int = None) -> InlineKeyboardMarkup:
+	def profile_menu(user: User, is_admin: bool = False, admin_level: int = None,
+	                 access_level: int = None) -> InlineKeyboardMarkup:
 		builder = InlineKeyboardBuilder()
 		adjust = []
-
+		
 		button_notif = InlineKeyboardButton(text="❌ Не уведомлять пользователя",
-											callback_data=f"admin_ban_{user.user_id} ") \
+		                                    callback_data=f"admin_ban_{user.user_id} ") \
 			if user.should_notify else InlineKeyboardButton(text="✅ Уведомлять пользователя",
-															callback_data=f"admin_unban_{user.user_id}")
+			                                                callback_data=f"admin_unban_{user.user_id}")
 		adjust.append(1)
 		builder.add(
 			button_notif
 		)
-
-
+		
 		if access_level > 1:
-
+			
 			# Назначение/снятие админа
 			if is_admin:
 				builder.add(InlineKeyboardButton(
@@ -201,9 +199,9 @@ class AdminKeyboards:
 					text="👑 Назначить админом",
 					callback_data=f"admin_grant_{user.user_id}"
 				))
-
+			
 			adjust.append(1)
-
+			
 			# Управление уровнем админа
 			if is_admin:
 				builder.row(
@@ -217,7 +215,15 @@ class AdminKeyboards:
 							callback_data=f"admin_setlevel_{user.user_id}_{level}"
 						))
 				adjust.extend([1, 2])
-
+		
+		builder.add(
+			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
+		)
+		adjust.append(1)
+		builder.add(
+			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
+		)
+		adjust.append(1)
 		builder.add(
 			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
 		)
@@ -228,7 +234,7 @@ class AdminKeyboards:
 		adjust.append(1)
 		builder.adjust(*adjust)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def channels_menu():
 		builder = InlineKeyboardBuilder()
@@ -239,13 +245,13 @@ class AdminKeyboards:
 		)
 		builder.adjust(2)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def back_to_main():
 		builder = InlineKeyboardBuilder()
 		builder.add(InlineKeyboardButton(text="◀ В главное меню", callback_data="admin_main"))
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def stats_menu():
 		builder = InlineKeyboardBuilder()
@@ -256,13 +262,13 @@ class AdminKeyboards:
 		)
 		builder.adjust(2)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def back_to_notification():
 		builder = InlineKeyboardBuilder()
 		builder.add(InlineKeyboardButton(text="◀ Назад в меню рассылки", callback_data="admin_notif"))
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def buttons_menu(has_buttons, prefix: Literal['notif', 'welcome']):
 		builder = InlineKeyboardBuilder()
@@ -274,7 +280,7 @@ class AdminKeyboards:
 		
 		builder.adjust(1, 2 if has_buttons else 1, 1)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def confirm_send_menu():
 		builder = InlineKeyboardBuilder()
@@ -284,34 +290,34 @@ class AdminKeyboards:
 		)
 		builder.adjust(2)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def back_to_buttons():
 		builder = InlineKeyboardBuilder()
 		builder.add(InlineKeyboardButton(text="◀ К списку кнопок", callback_data="notif_manage_buttons"))
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def remove_buttons(template):
 		builder = InlineKeyboardBuilder()
 		for i, btn in enumerate(template.buttons):
 			builder.button(text=f"{i + 1}. {btn[0]}", callback_data=f"remove_button_{i}")
-
+		
 		builder.button(text="◀ Назад", callback_data="notif_manage_buttons")
-
+		
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def logs_buttons(log_files):
 		builder = InlineKeyboardBuilder()
-
+		
 		for name in log_files[:7]:
 			builder.button(text=name, callback_data=f'logs-{name}')
-
+		
 		builder.adjust(1)
-
+		
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def notification_menu():
 		builder = InlineKeyboardBuilder()
@@ -332,8 +338,7 @@ class AdminKeyboards:
 			width=1
 		)
 		return builder.as_markup()
-
-
+	
 	def channels_list(self, channels: List[Tuple[str, str]], current_page: int, total_pages: int, prefix: str):
 		"""Клавиатура со списком каналов и пагинацией"""
 		builder = InlineKeyboardBuilder()
@@ -343,24 +348,24 @@ class AdminKeyboards:
 			adjust.append(1)
 		# if empty_button:
 		# 	adjust.append(2)
-
+		
 		# Кнопки каналов
 		for text, callback_data in channels:
 			builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
-
+		
 		# if empty_button:
 		# 	builder.add(InlineKeyboardButton(text="_", callback_data="_"))
-
+		
 		# Кнопки пагинации
 		self._add_pagination_buttons(builder, total_pages, prefix, current_page, adjust)
-
+		
 		# Кнопка назад
 		builder.add(InlineKeyboardButton(text="◀ Вернуться Назад", callback_data="admin_channels"))
 		adjust.append(1)
-
+		
 		builder.adjust(*adjust)
 		return builder.as_markup()
-
+	
 	def users_list(self, users: List[Tuple[str, str]], current_page: int, total_pages: int, prefix: str):
 		"""Клавиатура со списком пользователей и пагинацией"""
 		builder = InlineKeyboardBuilder()
@@ -370,51 +375,50 @@ class AdminKeyboards:
 			adjust.append(2)
 		if empty_button:
 			adjust.append(2)
-
+		
 		# Кнопки аользователей
 		for text, callback_data in users:
 			builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
-
+		
 		if empty_button:
 			builder.add(InlineKeyboardButton(text="_", callback_data="_"))
-
+		
 		# Кнопки пагинации
 		self._add_pagination_buttons(builder, total_pages, prefix, current_page, adjust)
-
+		
 		# Кнопка назад
 		builder.add(InlineKeyboardButton(text="◀ Вернуться Назад", callback_data="admin_channels"))
 		adjust.append(1)
-
+		
 		builder.adjust(*adjust)
 		return builder.as_markup()
-
+	
 	@staticmethod
 	def _add_pagination_buttons(builder, total_pages, prefix, current_page, adjust):
 		# Кнопки пагинации
 		pagination_buttons = []
-
+		
 		if total_pages > 1:
 			if current_page > 1:
 				pagination_buttons.append(("⬅️ Назад", f"{prefix}_page_{current_page - 1}"))
-
+			
 			pagination_buttons.append((f"{current_page}/{total_pages}", "current_page"))
-
+			
 			if current_page < total_pages:
 				pagination_buttons.append(("➡️ Вперед", f"{prefix}_page_{current_page + 1}"))
-
+			
 			for text, callback_data in pagination_buttons:
 				builder.add(InlineKeyboardButton(text=text, callback_data=callback_data))
-
+			
 			adjust.append(3)
-
+		
 		return pagination_buttons
-
+	
 	@staticmethod
 	def admin_channel():
 		builder = InlineKeyboardBuilder()
 		builder.button(text="Настроить основной/резервный канал", callback_data="admin_channels")
 		return builder.as_markup()
-	
 	
 	@staticmethod
 	def adaptive_media_keyboard(has_media, prefix: Literal['notif', 'welcome']):
@@ -425,7 +429,6 @@ class AdminKeyboards:
 		builder.adjust(1)
 		return builder.as_markup()
 	
-	
 	@staticmethod
 	def button_type_keyboard(prefix: Literal['notif', 'welcome', 'broadcast']):
 		builder = InlineKeyboardBuilder()
@@ -434,8 +437,7 @@ class AdminKeyboards:
 		builder.button(text="◀️ Назад", callback_data=f"{prefix}_manage_buttons")
 		builder.adjust(1)
 		return builder.as_markup()
-	
-	
+
 
 class BroadCastKeyboards:
 	@staticmethod
@@ -455,7 +457,6 @@ class BroadCastKeyboards:
 		kb.button(text="❌ Отмена", callback_data="admin_broadcast")
 		kb.adjust(1)
 		return kb.as_markup()
-	
 	
 	@staticmethod
 	def confirm_add_another():
@@ -494,7 +495,6 @@ class BroadCastKeyboards:
 		kb.button(text="◀️ Назад", callback_data="broadcast_history")
 		kb.adjust(1)
 		return kb.as_markup()
-	
 	
 	@staticmethod
 	def back_to_broadcast():
