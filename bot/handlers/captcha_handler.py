@@ -76,9 +76,10 @@ async def check_captcha(message: types.Message, services: Services, state: FSMCo
 			await captcha_message.delete()
 			if channel:
 				await services.welcome.send_welcome(user_id, channel)
-			
+
 			else:
 				await message.answer("✅ Капча успешно пройдена! Добро пожаловать!")
+			await message.answer("📋 Главное меню", reply_markup=UserKeyboards.main_menu())
 		else:
 			# Если не подписан - просим подписаться
 			backup_channel = await services.channel.get_backup_channel()

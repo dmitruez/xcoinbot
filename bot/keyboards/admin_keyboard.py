@@ -22,7 +22,7 @@ class AdminKeyboards:
 			InlineKeyboardButton(text="📝 Редактирование приветственного сообщения", callback_data="admin_welcome")
 		)
 		adjust.extend([2, 2, 1])
-		
+
 		# Кнопки для super admin (уровень 2+)
 		if admin_level >= 2:
 			builder.add(
@@ -216,6 +216,10 @@ class AdminKeyboards:
 						))
 				adjust.extend([1, 2])
 		
+		builder.add(
+			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
+		)
+		adjust.append(1)
 		builder.add(
 			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
 		)

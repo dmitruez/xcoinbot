@@ -4,6 +4,7 @@ from typing import List
 from aiogram import Bot
 
 from ..keyboards.admin_keyboard import AdminKeyboards
+from ..keyboards.user_keyboard import UserKeyboards
 from ..models import ChatMessage, ChatDialog, User
 from ..repositories import ChatRepository, AdminRepository, UserRepository
 from ..utils.loggers import services as logger
@@ -97,7 +98,7 @@ class ChatService:
 			))
 		return dialogs
 
-	async def notify_admins_about_user_message(self, user: User, text: str) -> None:
+	async def notify_admins_about_user_message(self, user: User, text: str, target_admin_id: int | None = None) -> None:
 		try:
 			admins = await self.admin_repo.get_all()
 			if not admins:
@@ -106,14 +107,25 @@ class ChatService:
 			escaped_text = html.escape(text)
 			user_name = html.escape(user.full_name)
 
-			for admin in admins:
-				if admin.user_id == user.user_id:
-					continue
+			recipients = [admin for admin in admins if admin.user_id != user.user_id]
+
+			is_targeted = False
+			if target_admin_id:
+				targeted = [admin for admin in recipients if admin.user_id == target_admin_id]
+				if targeted:
+					recipients = targeted
+					is_targeted = True
+
+			header = "📩 <b>Новое сообщение от пользователя</b>\n\n"
+			if is_targeted:
+				header = "📩 <b>Ответ пользователя на ваше сообщение</b>\n\n"
+
+			for admin in recipients:
 				try:
 					await self.bot.send_message(
 						admin.user_id,
 						(
-							"📩 <b>Новое сообщение от пользователя</b>\n\n"
+							header
 							+ f"Имя: {user_name}\n"
 							+ f"ID: <code>{user.user_id}</code>\n\n"
 							+ f"<code>{escaped_text}</code>"
@@ -133,7 +145,8 @@ class ChatService:
 		try:
 			await self.bot.send_message(
 				user_id,
-				"📨 <b>Сообщение от администрации</b>\n\n" + html.escape(text)
+				"📨 <b>Сообщение от администрации</b>\n\n" + html.escape(text),
+				reply_markup=UserKeyboards.chat_reply_to_admin(admin_id)
 			)
 			return True
 		except Exception as e:
