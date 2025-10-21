@@ -3,7 +3,7 @@ from typing import List, Tuple, Literal
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from ..models import User
+from ..models import User, ChatDialog
 
 
 class AdminKeyboards:
@@ -17,10 +17,11 @@ class AdminKeyboards:
 		builder.add(
 			InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
 			InlineKeyboardButton(text="👤 Пользователи", callback_data="admin_users"),
+			InlineKeyboardButton(text="💬 Сообщения", callback_data="admin_messages"),
 			InlineKeyboardButton(text="📝 Редактировать уведомление", callback_data="admin_notif"),
 			InlineKeyboardButton(text="📝 Редактирование приветственного сообщения", callback_data="admin_welcome")
 		)
-		adjust.extend([2, 1])
+		adjust.extend([2, 2, 1])
 
 		# Кнопки для super admin (уровень 2+)
 		if admin_level >= 2:
@@ -50,6 +51,53 @@ class AdminKeyboards:
 			InlineKeyboardButton(text="🧾 Список пользователей", callback_data="admin_users_list"), # НЕ РЕАЛИЗОВАНО
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
 		)
+		builder.adjust(1)
+		return builder.as_markup()
+
+	@staticmethod
+	def messages_menu():
+		builder = InlineKeyboardBuilder()
+		builder.add(
+			InlineKeyboardButton(text="📥 Непрочитанные", callback_data="admin_messages_unread"),
+			InlineKeyboardButton(text="🕘 Последние диалоги", callback_data="admin_messages_recent"),
+			InlineKeyboardButton(text="◀ Назад", callback_data="admin_main")
+		)
+		builder.adjust(1)
+		return builder.as_markup()
+
+	@staticmethod
+	def dialogs_list(dialogs: List[ChatDialog], prefix: str) -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		for dialog in dialogs:
+			unread = f" ({dialog.unread_count})" if dialog.unread_count else ""
+			title = f"{dialog.full_name}{unread}"
+			if len(title) > 32:
+				title = title[:29] + "..."
+			builder.button(text=title, callback_data=f"{prefix}_{dialog.user_id}")
+		builder.button(text="◀ Назад", callback_data="admin_messages")
+		builder.adjust(1)
+		return builder.as_markup()
+
+	@staticmethod
+	def chat_dialog_controls(user_id: int) -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		builder.button(text="✏️ Ответить", callback_data=f"admin_messages_reply_{user_id}")
+		builder.button(text="🔄 Обновить", callback_data=f"admin_messages_open_{user_id}")
+		builder.button(text="◀ Назад", callback_data="admin_messages")
+		builder.adjust(2, 1)
+		return builder.as_markup()
+
+	@staticmethod
+	def chat_notification(user_id: int) -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		builder.button(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user_id}")
+		builder.adjust(1)
+		return builder.as_markup()
+
+	@staticmethod
+	def chat_reply_cancel(user_id: int) -> InlineKeyboardMarkup:
+		builder = InlineKeyboardBuilder()
+		builder.button(text="◀ Назад", callback_data=f"admin_messages_open_{user_id}")
 		builder.adjust(1)
 		return builder.as_markup()
 	
@@ -162,6 +210,10 @@ class AdminKeyboards:
 						))
 				adjust.extend([1, 2])
 
+		builder.add(
+			InlineKeyboardButton(text="💬 Открыть диалог", callback_data=f"admin_messages_open_{user.user_id}")
+		)
+		adjust.append(1)
 		builder.add(
 			InlineKeyboardButton(text="◀ Назад", callback_data="admin_users")
 		)
