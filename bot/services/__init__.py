@@ -4,6 +4,7 @@ from .admin_service import AdminService
 from .broadcast_service import BroadcastService
 from .captcha_service import CaptchaService
 from .channel_service import ChannelService
+from .chat_service import ChatService
 from .message_service import MessageService
 from .notifier_service import NotificationService
 from .subscriber_service import SubscriptionService
@@ -24,6 +25,7 @@ class Services:
 		self.admin: AdminService = AdminService(repos.admin, repos.user, repos.channel)
 		self.welcome: WelcomeService = WelcomeService(bot, repos)
 		self.broadcast: BroadcastService = BroadcastService(repos.broadcast, repos.admin)
+		self.chat: ChatService = ChatService(bot, repos.chat, repos.admin, repos.user)
 
 
 def setup_services(bot: Bot, repos: Repositories) -> Services:
