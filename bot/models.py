@@ -77,3 +77,25 @@ class BroadcastMessage:
 	error_count: int = 0
 	total_users: int = 0
 	id: int = None
+
+
+@dataclass
+class ChatMessage:
+	id: int | None
+	user_id: int
+	sender: str
+	message: str
+	created_at: datetime = get_datetime_now()
+	is_read: bool = False
+	admin_id: Optional[int] = None
+
+
+@dataclass
+class ChatDialog:
+	user_id: int
+	full_name: str
+	username: Optional[str]
+	last_message: str
+	last_sender: str
+	last_at: datetime
+	unread_count: int = 0

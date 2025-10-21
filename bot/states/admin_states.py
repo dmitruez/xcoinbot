@@ -25,6 +25,12 @@ class UserStates(StatesGroup):
 	WAITING_ID = State()
 
 
+class ChatStates(StatesGroup):
+	LIST = State()
+	WAITING_USER = State()
+	WAITING_REPLY = State()
+
+
 class ChannelsStates(StatesGroup):
 	CHANNELS = State()
 	EDIT_MAIN_CHANNEL = State()
